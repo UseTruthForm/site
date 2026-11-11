@@ -1,9 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="t">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t">
   <title id="t">Truthform</title>
-  <!-- A letter T whose stem is a plumb line: the bar it hangs from, the
-       line, and the weight. A plumb line shows what is truly vertical,
-       whatever the drawing says. The line is 2.5 units wide so it still
-       shows at favicon size; thinner, it vanished at 16px. -->
+  <!-- A letter T made of a beam and a plumb line: the beam, the string, a
+       builder's plumb bob, and the mark on the ground its tip points at. A
+       plumb line shows what is truly vertical, whatever the drawing says.
+       The bob is slim, with flat machined faces and a separate cap and
+       steel tip, and the beam has square ends, so that it reads as a tool
+       at a glance; rounder versions did not. -->
   <style>
     .a { fill: #0f766e; }
     .b { fill: #334155; }
@@ -12,6 +14,6 @@
       .b { fill: #cbd5e1; }
     }
   </style>
-  <g class="b"><rect x="4" y="4" width="24" height="4.5" rx="2.25"/></g>
-  <g class="a"><rect x="14.75" y="8.5" width="2.5" height="9"/><path d="M16 16.2Q16.6 16.2 17 16.7L21.2 21.8Q21.8 22.5 21.3 23.3L16.9 29.4Q16 30.6 15.1 29.4L10.7 23.3Q10.2 22.5 10.8 21.8L15 16.7Q15.4 16.2 16 16.2Z"/></g>
+  <g class="b"><rect x="8" y="5" width="48" height="6" rx="1.2"/><rect x="28.6" y="27" width="6.8" height="3.6" rx=".8"/><path d="M30.5 53.2H33.5L32.4 57.2Q32 58 31.6 57.2Z"/><rect x="24" y="59.6" width="16" height="2" rx="1"/></g>
+  <g class="a"><rect x="31.1" y="11" width="1.8" height="16.5"/><path d="M27.5 31.8H36.5L39.8 35.6V39.4L33.6 52H30.4L24.2 39.4V35.6Z"/></g>
 </svg>
