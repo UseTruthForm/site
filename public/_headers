@@ -1,0 +1,24 @@
+# Response headers for Cloudflare Pages (GitHub Pages ignores this file and
+# serves it as a plain file, which is harmless).
+#
+# The site loads only its own stylesheet and logo: no scripts, fonts, frames
+# or forms. The policy allows exactly that, so anything injected into a page
+# (or added later by mistake, such as an analytics snippet) is refused by
+# the browser instead of quietly loading. Adding a script or an external
+# resource means changing this policy on purpose.
+#
+# HSTS is left to the Cloudflare zone's settings: once sent it is cached by
+# browsers for its max-age and cannot be withdrawn, so it is a decision for
+# the domain, not for one deploy.
+/*
+  Content-Security-Policy: default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Production and branch previews on pages.dev must not be indexed: they
+# duplicate usetruthform.com, and a preview may show unreleased wording.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex

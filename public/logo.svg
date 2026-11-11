@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="t">
+  <title id="t">Truthform</title>
+  <!-- A letter T whose stem is a plumb line: the bar it hangs from, the
+       line, and the weight. A plumb line shows what is truly vertical,
+       whatever the drawing says. The line is 2.5 units wide so it still
+       shows at favicon size; thinner, it vanished at 16px. -->
+  <style>
+    .a { fill: #0f766e; }
+    .b { fill: #334155; }
+    @media (prefers-color-scheme: dark) {
+      .a { fill: #5eead4; }
+      .b { fill: #cbd5e1; }
+    }
+  </style>
+  <g class="b"><rect x="4" y="4" width="24" height="4.5" rx="2.25"/></g>
+  <g class="a"><rect x="14.75" y="8.5" width="2.5" height="9"/><path d="M16 16.2Q16.6 16.2 17 16.7L21.2 21.8Q21.8 22.5 21.3 23.3L16.9 29.4Q16 30.6 15.1 29.4L10.7 23.3Q10.2 22.5 10.8 21.8L15 16.7Q15.4 16.2 16 16.2Z"/></g>
+</svg>

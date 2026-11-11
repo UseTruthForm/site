@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Permissions | Truthform docs</title>
+  <meta name="description" content="What to grant Truthform on AWS, Azure, Google Cloud, Kubernetes, GitHub and Cloudflare, for capture and for restore, and which grants have been verified.">
+  <link rel="canonical" href="https://usetruthform.com/docs/permissions/">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c1014" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" aria-label="Truthform home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <g class="sb"><rect x="4" y="4" width="24" height="4.5" rx="2.25"/></g>
+          <g class="sa"><rect x="14.75" y="8.5" width="2.5" height="9"/><path d="M16 16.2Q16.6 16.2 17 16.7L21.2 21.8Q21.8 22.5 21.3 23.3L16.9 29.4Q16 30.6 15.1 29.4L10.7 23.3Q10.2 22.5 10.8 21.8L15 16.7Q15.4 16.2 16 16.2Z"/></g>
+        </svg>
+        <span>Truthform</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="nav">
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#roadmap">Roadmap</a></li>
+          <li class="nav-keep"><a href="/docs/" aria-current="true">Docs</a></li>
+          <li><a class="nav-cta" href="/#follow">Follow along</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="docs">
+    <div class="wrap docs-grid">
+      <nav class="docs-nav" aria-label="Documentation">
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs/">Overview</a></li>
+            <li><a href="/docs/getting-started/">Getting started</a></li>
+            <li><a href="/docs/permissions/" aria-current="page">Permissions</a></li>
+            <li><a href="/docs/agents/">Agents (MCP)</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <article class="prose">
+        <h1>Permissions</h1>
+        <p class="lede">A capture only reads. Grant it a read-only role, and run it with the capture-only edition, which cannot send a write whatever it is given. A restore creates and changes resources, so it needs write access: grant that separately, for the restore only.</p>
+
+        <h2 id="generate">Build the grant, then check it</h2>
+        <p>You do not have to build these by hand. <code>truthform permissions</code> writes the grant as a template for the platform's own tool (a CloudFormation stack, an Azure deployment stack, Terraform, a Kubernetes manifest; for GitHub and Cloudflare, the exact token settings) and prints every command to check what is there first, deploy it, verify it and remove it again, with your values filled in. It grants nothing itself.</p>
+<pre class="codeblock" tabindex="0"><code>truthform permissions --platform aws --account 111122223333 \
+    --principal arn:aws:iam::111122223333:role/ops --source-profile ops</code></pre>
+        <p>Then check what the grant can actually read, type by type, with a capture that is written nowhere. A type refused for want of permission is reported as <strong>denied</strong>, never as empty, and the check exits 3.</p>
+<pre class="codeblock" tabindex="0"><code>truthform check --platform aws --region us-east-1 --profile truthform-reader</code></pre>
+
+        <p>Each grant below says whether it has been <span class="badge badge-live">Verified</span>, meaning Truthform ran with exactly that access, or is <span class="badge badge-plan">Expected</span>, meaning it follows from the platform's documentation and the calls Truthform makes but has not yet been run with exactly that access.</p>
+
+        <p>Jump to: <a href="#aws">AWS</a> · <a href="#azure">Azure</a> · <a href="#gcp">Google Cloud</a> · <a href="#kubernetes">Kubernetes</a> · <a href="#github">GitHub</a> · <a href="#cloudflare">Cloudflare</a></p>
+
+        <h2 id="aws">AWS</h2>
+        <p>Truthform reads and writes through Cloud Control, which calls each service on Truthform's behalf with the caller's own permissions. A role therefore needs Cloud Control's actions <strong>and</strong> the read (or write) actions of every service whose types are captured.</p>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Use</th><th scope="col">Grant</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td data-label="Use">Capture, diff</td>
+                <td data-label="Grant">The managed policy <code>ReadOnlyAccess</code>, <strong>plus Truthform's read add-on</strong>, which <code>truthform permissions</code> puts in the role. <code>ReadOnlyAccess</code> covers Cloud Control's reads, <code>sts:GetCallerIdentity</code>, <code>ec2:DescribeAvailabilityZones</code> and most services' <code>Describe*</code>, <code>Get*</code> and <code>List*</code>, but not every newer service's. The add-on is the reads the CloudFormation registry's handlers name that <code>ReadOnlyAccess</code> lacks: 527 actions in three customer managed policies. A schema naming an action is not enough to grant it, because some reads return secrets that <code>ReadOnlyAccess</code> leaves out on purpose (<code>ivs:GetStreamKey</code>, <code>glue:GetConnection</code>), so it keeps only reads of configuration: no secret values, no data, no writes. It is regenerated weekly from AWS's public sources, with no AWS credentials, and each change is reviewed before it ships. <code>ReadOnlyAccess</code> itself also reads data (S3 objects, DynamoDB items).</td>
+                <td data-label="Status"><span class="badge badge-live">Verified</span><br>On 2026-10-24 the role <code>truthform permissions</code> builds captured a sandbox region with the same 97 resources as an identity holding <code>ReadOnlyAccess</code> and <code>PowerUserAccess</code>, and no sampled write was allowed. It was refused 2 of 1,161 types, both on purpose: a data-plane type and one holding credentials. The sandbox holds little, so that count is a floor: about 37 types need a refused action just to be listed (<code>AWS::Glue::Connection</code> among them), and an account using them sees them reported as refused, not empty. <code>ReadOnlyAccess</code> alone was refused 87 types. A trust from another account is not yet verified.</td>
+              </tr>
+              <tr>
+                <td data-label="Use">Restore</td>
+                <td data-label="Grant"><code>cloudformation:CreateResource</code>, <code>cloudformation:UpdateResource</code>, <code>cloudformation:GetResourceRequestStatus</code>, plus each service's create and update actions. <code>PowerUserAccess</code> covers every service except IAM.</td>
+                <td data-label="Status"><span class="badge badge-live">Verified</span><br>With <code>PowerUserAccess</code>, for the 15 non-IAM types the restore drill uses. Creating a Lambda function also needs <code>iam:PassRole</code> on its role.</td>
+              </tr>
+              <tr>
+                <td data-label="Use">Restore IAM types</td>
+                <td data-label="Grant">Add IAM write (<code>iam:CreateRole</code>, <code>iam:PutRolePolicy</code>, <code>iam:AttachRolePolicy</code>, <code>iam:CreatePolicy</code>, <code>iam:TagRole</code>, …) and <code>iam:PassRole</code> for anything that takes a role, scoped to the names being restored.</td>
+                <td data-label="Status"><span class="badge badge-live">Verified</span><br>On 2026-10-24, for a role and a customer managed policy attached to it, with IAM write limited to roles and policies named <code>truthform-drill*</code>: deleted and restored with no diff, and brought back from drift by <code>--update</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p><code>ViewOnlyAccess</code> is not enough. It omits many of the <code>Get*</code> reads Cloud Control's handlers make, and those types are reported as failed in <code>coverage.yaml</code>.</p>
+
+        <h2 id="azure">Azure</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Use</th><th scope="col">Grant</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td data-label="Use">Capture, diff</td>
+                <td data-label="Grant">The built-in <strong>Reader</strong> role at the subscription. It reads every resource, and the extension resources Truthform captures: role assignments and custom role definitions, locks, policy assignments and diagnostic settings.</td>
+                <td data-label="Status"><span class="badge badge-live">Verified</span><br>On 2026-10-23, a service principal holding only Reader captured a sandbox subscription to the same digest as its owner.</td>
+              </tr>
+              <tr>
+                <td data-label="Use">Restore</td>
+                <td data-label="Grant"><strong>Contributor</strong>, plus <strong>User Access Administrator</strong> for role assignments and locks (<code>Microsoft.Authorization/*/write</code>, which Contributor does not have). <strong>Owner</strong> covers both.</td>
+                <td data-label="Status"><span class="badge badge-live">Verified</span><br>As Owner. Contributor plus User Access Administrator has not been run on its own.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="gcp">Google Cloud</h2>
+        <p>The Cloud Asset Inventory and Cloud Resource Manager APIs must be enabled in the project, as must each API whose resources are captured.</p>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Use</th><th scope="col">Grant</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td data-label="Use">Capture, diff</td>
+                <td data-label="Grant"><code>roles/viewer</code> <strong>and</strong> <code>roles/cloudasset.viewer</code> on the project.</td>
+                <td data-label="Status"><span class="badge badge-live">Verified</span><br>On 2026-10-23, a service account holding exactly these captured a sandbox project to the same digest as its owner. With <code>roles/viewer</code> alone the capture fails loudly: Cloud Asset Inventory answers 403.</td>
+              </tr>
+              <tr>
+                <td data-label="Use">Restore</td>
+                <td data-label="Grant"><code>roles/editor</code>, plus <code>roles/iam.serviceAccountAdmin</code> and <code>roles/iam.roleAdmin</code> for service accounts and custom roles.</td>
+                <td data-label="Status"><span class="badge badge-plan">Expected</span><br>Restores have run as the project's owner.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="kubernetes">Kubernetes</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Use</th><th scope="col">Grant</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td data-label="Use">Capture, diff</td>
+                <td data-label="Grant"><code>list</code> on every resource type, cluster-wide, and nothing else. Not <code>get</code>: on <code>*</code> it covers subresources too, so it reaches the kubelet through <code>nodes/proxy</code> and opens a shell through <code>pods/exec</code>. The built-in <code>view</code> ClusterRole leaves out Secrets: their values are never captured, but without <code>list</code> on them their existence is not either. Note that <code>list</code> on Secrets does return their values to whoever holds the role.</td>
+                <td data-label="Status"><span class="badge badge-live">Verified</span><br>On every test run, against a real API server with RBAC: an identity bound by exactly the role <code>truthform permissions</code> writes captured every type, and was refused <code>get</code> on Secrets, <code>pods/exec</code>, <code>nodes/proxy</code> and any write. Not yet verified on a managed cluster.</td>
+              </tr>
+              <tr>
+                <td data-label="Use">Restore</td>
+                <td data-label="Grant"><code>cluster-admin</code>. A restore recreates Roles and bindings, and Kubernetes lets an identity grant only what it already holds, so a narrower role fails on the first Role with a verb it lacks.</td>
+                <td data-label="Status"><span class="badge badge-live">Verified</span><br>With cluster-admin, on kind clusters.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="github">GitHub</h2>
+        <p>The token comes from <code>GITHUB_TOKEN</code>. With a fine-grained token, grant these, read-only for a capture and read and write for a restore:</p>
+        <ul>
+          <li><strong>Organization:</strong> Administration, Custom properties, Webhooks, Secrets, Variables, Self-hosted runners (runner groups), Actions policies.</li>
+          <li><strong>Repository (all repositories in scope):</strong> Administration, Actions, Environments, Secrets, Variables, Webhooks, Pages, Metadata.</li>
+        </ul>
+        <p>A classic token needs <code>repo</code> and <code>admin:org</code>. <code>read:org</code> is not enough: GitHub answers the organisation's Actions settings, secrets, variables and runner groups with “You must be an org admin”.</p>
+        <p><span class="badge badge-warn">Partly verified</span> A capture with a classic token lacking <code>admin:org</code> read every repository collection and was refused exactly ten organisation collections, each naming the fine-grained permission above. It reported them as failed, not as empty. The full fine-grained set has not been run on its own.</p>
+
+        <h2 id="cloudflare">Cloudflare</h2>
+        <p>Sign in through the browser with <code>truthform login cloudflare</code>. The full edition asks for <code>zone.read</code>, <code>dns.read</code> and <code>dns.write</code>; the capture-only edition asks for no write. Or set a token in <code>CLOUDFLARE_API_TOKEN</code>, which is used first: <strong>Zone: Read</strong> and <strong>DNS: Read</strong> for a capture, <strong>Zone: Edit</strong> and <strong>DNS: Edit</strong> for a restore, scoped to the account.</p>
+        <p><span class="badge badge-live">Verified</span> for a capture: a real account was captured through the browser sign-in, with its read access. <span class="badge badge-plan">Expected</span> for a restore, which has not yet been run against a real Cloudflare account.</p>
+
+        <h2 id="what-it-does">What Truthform does with the access it is given</h2>
+        <ul>
+          <li><strong>Capture and diff never write.</strong> Every client that talks to a platform sits behind the read-only guard, which refuses any request that is not a read before it leaves the machine. It is an allow-list, so a request it does not recognise is refused, never let through. The capture-only edition also refuses to restore.</li>
+          <li><strong>Secret values are named, not written.</strong> Values the platforms mask or never return (passwords, keys, a webhook's secret) are named in the snapshot and supplied at restore with <code>--values</code>, which is read and sent to the platform, never written. Kubernetes Secrets, and credentials left as plain values in an <code>env</code> list or a ConfigMap, are withheld the same way. A credential hidden in a command argument or in a config file is not recognised and is captured as configuration; see the <a href="/docs/getting-started/#capture">getting started</a> page.</li>
+          <li><strong>A refused read is a failure, not an empty result.</strong> A missing permission shows in <code>coverage.yaml</code> and <code>REPORT.md</code> and makes the capture exit 3 (incomplete).</li>
+        </ul>
+
+        <nav class="doc-next" aria-label="Next and previous">
+          <a href="/docs/getting-started/">&larr; Getting started</a>
+          <a href="/docs/agents/">Agents (MCP) &rarr;</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-brand">
+        <img src="/logo.svg" alt="" width="20" height="20">
+        <span>Truthform</span>
+      </p>
+      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
+      <p>Not yet released. This site sets no cookies and runs no analytics.</p>
+      <p>&copy; 2026 Truthform</p>
+    </div>
+  </footer>
+</body>
+</html>

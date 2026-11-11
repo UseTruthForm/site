@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Getting started | Truthform docs</title>
+  <meta name="description" content="Install Truthform, give it credentials, capture a first snapshot, then diff, restore and capture a whole environment.">
+  <link rel="canonical" href="https://usetruthform.com/docs/getting-started/">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c1014" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" aria-label="Truthform home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <g class="sb"><rect x="4" y="4" width="24" height="4.5" rx="2.25"/></g>
+          <g class="sa"><rect x="14.75" y="8.5" width="2.5" height="9"/><path d="M16 16.2Q16.6 16.2 17 16.7L21.2 21.8Q21.8 22.5 21.3 23.3L16.9 29.4Q16 30.6 15.1 29.4L10.7 23.3Q10.2 22.5 10.8 21.8L15 16.7Q15.4 16.2 16 16.2Z"/></g>
+        </svg>
+        <span>Truthform</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="nav">
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#roadmap">Roadmap</a></li>
+          <li class="nav-keep"><a href="/docs/" aria-current="true">Docs</a></li>
+          <li><a class="nav-cta" href="/#follow">Follow along</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="docs">
+    <div class="wrap docs-grid">
+      <nav class="docs-nav" aria-label="Documentation">
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs/">Overview</a></li>
+            <li><a href="/docs/getting-started/" aria-current="page">Getting started</a></li>
+            <li><a href="/docs/permissions/">Permissions</a></li>
+            <li><a href="/docs/agents/">Agents (MCP)</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <article class="prose">
+        <h1>Getting started</h1>
+        <p class="lede">Install the binary, point it at a system with read-only credentials, and capture a snapshot. Then diff it against what is running, or restore it somewhere else.</p>
+
+        <h2 id="install">Install</h2>
+        <p>Truthform is one binary with nothing else to install. It comes as an archive per platform: Linux, macOS and Windows, each for amd64 and arm64, in two editions. That is 12 archives (zip for Windows, tar.gz for the rest) and a <code>SHA256SUMS</code> file to check them against.</p>
+        <p>Truthform is not publicly released yet, so there is no download page: archives are sent to early users directly.</p>
+        <p>For Linux on amd64, check the archive, unpack it and confirm the build. The file names carry the version, written here as <code>VERSION</code>.</p>
+<pre class="codeblock" tabindex="0"><code>sha256sum -c SHA256SUMS --ignore-missing
+tar -xzf truthform_VERSION_linux_amd64.tar.gz
+./truthform_VERSION_linux_amd64/truthform version</code></pre>
+        <p>Then put <code>truthform</code> (<code>truthform.exe</code> on Windows) on your <code>PATH</code>. <code>truthform version</code> names the version, commit and edition, so any binary can be traced to its build.</p>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Edition</th><th scope="col">Can</th><th scope="col">Use it for</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Edition"><strong>full</strong></td><td data-label="Can">capture, diff, restore</td><td data-label="Use it for">Environments you own and intend to change.</td></tr>
+              <tr><td data-label="Edition"><strong>capture-only</strong> <br>(file names end <code>_capture-only</code>)</td><td data-label="Can">capture, diff</td><td data-label="Use it for">Assessments and audits. It refuses to restore, and every request it makes to a platform goes through the read-only guard, so it cannot change anything it reaches.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="credentials">Credentials</h2>
+        <p>Truthform uses each platform's standard credentials, from the environment it runs in. Give a capture a read-only role and a restore a write role, separately: the <a href="/docs/permissions/">permissions page</a> lists the exact grants.</p>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Platform</th><th scope="col">Credentials</th><th scope="col">Target flags</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Platform">Kubernetes</td><td data-label="Credentials">Your kubeconfig (<code>--kubeconfig</code> to use another file)</td><td data-label="Target flags"><code>--context</code></td></tr>
+              <tr><td data-label="Platform">AWS</td><td data-label="Credentials">The AWS SDK's default chain: shared config and credential files, SSO, environment variables</td><td data-label="Target flags"><code>--region</code>, <code>--profile</code></td></tr>
+              <tr><td data-label="Platform">Azure</td><td data-label="Credentials">The Azure SDK's default chain, so <code>az login</code> works</td><td data-label="Target flags"><code>--subscription</code></td></tr>
+              <tr><td data-label="Platform">Google Cloud</td><td data-label="Credentials">Application Default Credentials (<code>gcloud auth application-default login</code>)</td><td data-label="Target flags"><code>--project</code></td></tr>
+              <tr><td data-label="Platform">GitHub</td><td data-label="Credentials">A token in <code>GITHUB_TOKEN</code></td><td data-label="Target flags"><code>--account</code> (the organisation)</td></tr>
+              <tr><td data-label="Platform">Cloudflare</td><td data-label="Credentials">A browser sign-in (<code>truthform login cloudflare</code>), or a token in <code>CLOUDFLARE_API_TOKEN</code>, which is used first when set</td><td data-label="Target flags"><code>--account</code> (the account ID)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Tokens are read from the environment and never written. A Cloudflare browser sign-in is kept in the operating system's keychain, and <code>truthform logout cloudflare</code> removes it. Besides each platform's API, Truthform downloads the schemas the platforms publish: AWS's CloudFormation registry schemas, Azure's type definitions, Google's Discovery documents, and GitHub's and Cloudflare's OpenAPI descriptions. There is no Truthform service for it to call.</p>
+
+        <h2 id="access">Grant access, then check it</h2>
+        <p><code>truthform permissions</code> writes the grant a capture needs, as a template for the platform's own tool, with every command to deploy, verify and remove it. It grants nothing itself. <code>truthform check</code> then says who Truthform runs as, what that identity holds beyond what it needs, and what it can read, type by type, from a trial capture written nowhere. On Azure, with <code>$SUB</code> your subscription ID and <code>$ID</code> the object ID of the service principal Truthform will run as:</p>
+<pre class="codeblock" tabindex="0"><code>truthform permissions --platform azure --subscription "$SUB" \
+    --principal-id "$ID" --principal-type ServicePrincipal
+truthform check --platform azure --subscription "$SUB"</code></pre>
+        <p>Run <code>check</code> signed in as that principal. A value <code>permissions</code> needs and was not given is an error that says how to find it; it never prints a command with a placeholder in it.</p>
+        <p>A type refused for want of permission is reported as denied, never as empty. A type the platform kept throttling until the retries ran out is reported as throttled: that is not a permission, and the same check run later, or with a lower <code>--parallel</code>, reads it. The <a href="/docs/permissions/">permissions page</a> explains each grant.</p>
+
+        <h2 id="capture">Capture</h2>
+        <p>Capture always only reads. In these commands, <code>prod</code> stands for your own kubeconfig context and AWS profile, and <code>my-org</code> for your GitHub organisation. The Azure and Google Cloud lines take the subscription and project your CLI is currently set to.</p>
+<pre class="codeblock" tabindex="0"><code>truthform capture --context prod --out snap/k8s
+truthform capture --platform aws --region us-east-2 --profile prod --out snap/aws
+truthform capture --platform azure --subscription "$(az account show --query id -o tsv)" --out snap/azure
+truthform capture --platform gcp --project "$(gcloud config get-value project)" --out snap/gcp
+truthform capture --platform github --account my-org --out snap/github</code></pre>
+        <p>Each snapshot directory holds:</p>
+        <ul>
+          <li><code>REPORT.md</code>: for people. It leads with anything incomplete, then says what was captured, what was skipped and why, and what a restore will need.</li>
+          <li><code>objects/</code>: one YAML file per resource.</li>
+          <li><code>schemas/</code>: the fields every captured type published at capture time, so <code>truthform schema-diff old/ new/</code> can show what an API added or removed.</li>
+          <li><code>coverage.yaml</code>: everything that was read, skipped or not captured, each with a reason.</li>
+          <li><code>snapshot.yaml</code>: with a digest. Two captures of an unchanged system have the same one, and the snapshot stores no capture time or machine details.</li>
+        </ul>
+        <p>What a snapshot never holds, by design:</p>
+        <ul>
+          <li><strong>Data:</strong> bucket objects, blobs, database rows, queue messages, volume contents.</li>
+          <li><strong>Secret values:</strong> passwords, keys, a webhook's secret, and a webhook URL that is itself a credential (Slack, Discord, Teams, a <code>?token=</code> or <code>user:pass@</code> URL). They are named in the snapshot and supplied at restore.</li>
+          <li><strong>Credentials left as plain configuration in Kubernetes:</strong> a value named like one (<code>*_PASSWORD</code>, <code>*_TOKEN</code>, <code>*_SECRET</code>, <code>API_KEY</code>, <code>*_KEY</code>, <code>*_DSN</code> and similar) in any <code>env</code> list (pod templates, Argo and Tekton steps, a HelmRelease's values) or as a ConfigMap key, and any such value that is a URL with a password in it. It is named in the snapshot (<code>truthform.org/withheld-env</code>), <code>REPORT.md</code> lists it as a finding to move into a Secret, and a restore reads it from the source with <code>--secrets-from-context</code>. Not recognised: a credential in a command argument, inside a config file a ConfigMap holds, or in Helm values outside an <code>env</code> list. Because both sides are withheld, a diff does not show a rotated credential. A snapshot taken before Truthform withheld these values still holds them, including in git history.</li>
+          <li><strong>What the platform made itself:</strong> default VPCs and subnets, built-in roles, provider-managed policies, a Kubernetes distribution's add-ons, such as what AKS installs and upgrades itself and what an addon manager keeps as shipped (<code>--include-system</code> captures these). Capture a fresh account or cluster once and pass it as <code>--baseline</code> to skip anything identical to it.</li>
+          <li><strong>What something else creates and replaces:</strong> on AWS, what a CloudFormation stack or an AWS service owns; on Azure, a resource another resource manages, and what an AKS cluster is recognised to have made in its node group, such as its node scale set and load balancers. Restoring them would fight what makes them, and each scale-out would read as drift. <code>REPORT.md</code> lists each one under "Skipped on purpose" with its reason, and <code>--capture-managed</code> captures them anyway. Something else in a node group, such as a storage account a person put there, is captured, and a restore applies it after the cluster has made the group again. So is a role assignment on the group itself. <code>REPORT.md</code> lists these too, in case one was the cluster's after all, and lists under "Check before relying on a restore" what may not come back: a data disk attached to a VM, a lock on something left out, and everything in a group some other service manages.</li>
+          <li><strong>What is only taken to be AKS's:</strong> on Kubernetes, a cluster-scoped object that Eno, the tool AKS manages some of its own objects with, applied or labelled, and that also has an AKS name, group or key. A person's object could carry the same marks, so <code>REPORT.md</code> names each one under "Taken as the platform's", and <code>--capture-platform</code> keeps them.</li>
+          <li><strong>What a Kubernetes controller makes:</strong> pods, ReplicaSets and Jobs, which the Deployment, DaemonSet or CronJob that owns them makes again. <code>coverage.yaml</code> records them once per owner rather than once per instance, so new pod names after a rebuilt node, or a new Job run, leave the snapshot unchanged.</li>
+        </ul>
+        <p>Limit a capture to some types with <code>--types</code>, for example <code>--types 'AWS::EC2::*,AWS::IAM::Role'</code>. A full AWS region, about 1,500 types, takes around five minutes. If a read is refused, the capture still writes the snapshot, names the gap and exits 3, so a missing permission never looks like an empty account.</p>
+        <p>Every platform limits how fast it is read, and Truthform waits as each one documents: Azure's <code>Retry-After</code>, Google Cloud's backoff, and GitHub's and Cloudflare's rate-limit headers, sending nothing more once a limit is spent, so Cloudflare never locks the account out. A wait past 15 minutes (GitHub's hourly limit) is not sat out. A read that stays throttled is reported as throttled, never as empty or denied; capture again later. On AWS, Azure and Google Cloud, a lower <code>--parallel</code> (8 calls in flight by default) eases a throttled account.</p>
+
+        <h2 id="diff">Diff</h2>
+<pre class="codeblock" tabindex="0"><code>truthform diff --platform aws --region us-east-2 --profile prod --from snap/aws</code></pre>
+        <p>Diff reads the live system under the same rules as the capture and lists what was added, removed or changed, field by field. It exits 2 when there are differences, so it can gate a pipeline or raise an alert. On Azure it also lists as <code>not working</code>, and exits 2 for, a resource that failed to provision or a peering that is not connected, whose configuration can match perfectly well. If you captured with <code>--types</code>, <code>--baseline</code> or <code>--capture-managed</code>, pass the same to diff; it refuses a snapshot captured under different rules rather than report a misleading difference. Two snapshots can be compared offline with <code>truthform compare</code>.</p>
+
+        <h2 id="restore">Restore</h2>
+        <p>Restore needs the full edition and write access. It never deletes a resource. Here <code>dr</code> is your own AWS profile for the account you are restoring into, and <code>staging</code> your own kubeconfig context.</p>
+<pre class="codeblock" tabindex="0"><code>truthform restore --platform aws --region us-east-2 --profile dr --from snap/aws --values secrets.yaml
+truthform restore --context staging --from snap/k8s --secrets-from-context prod</code></pre>
+        <ul>
+          <li><strong>By default, a restore only creates what is missing.</strong> A resource already there and identical counts as applied; one that is there but different is reported with the fields that differ, and left alone.</li>
+          <li><strong><code>--update</code></strong> also brings differing resources in line with the snapshot. It never replaces one: a change the platform can only make by deleting and re-creating (an AWS create-only property) is refused and named. Kubernetes restores always apply, with server-side apply.</li>
+          <li><strong>References are remapped.</strong> The snapshot holds references, not the source's IDs: a subnet's VPC, a role's ARN or a principal ID resolves to what the target created.</li>
+          <li><strong>In stages, on Azure:</strong> <code>--types 'Microsoft.Network/*'</code> restores those types and their children. Resource groups always come, a pattern that matches nothing is refused, and what a selected resource needs must already be there. A lock waits for a run that covers everything, since it would refuse what comes after it.</li>
+          <li><strong>Secrets.</strong> On AWS, Azure, GitHub and Cloudflare, <code>--values</code> takes a YAML file of the values the platform never returns, keyed by resource. It is read and sent to the platform, never written, and the restore names every secret it was not given. On Kubernetes, <code>--secrets-from-context</code> reads the values live from a source cluster and sends them straight to the target; a secret with no values is refused.</li>
+          <li><strong>Into another AWS region:</strong> restore from the snapshot with a different <code>--region</code>. Zones are paired by zone ID and the pairing is printed; <code>--zone-map use2-az1=use1-az4</code> overrides a pair.</li>
+          <li><strong>Into another Azure subscription while the source exists:</strong> storage accounts, key vaults, container registries, SQL servers and Service Bus namespaces have names unique across Azure, so the restore would fail on them. <code>--rename names.yaml</code> gives them new names, one <code>Type/name: newname</code> per line, such as <code>Microsoft.Storage/storageAccounts/shopassets01: shopassets02</code>. Their children, the role assignments, locks and diagnostic settings on them, and every reference to them follow. Text that only mentions an old name, such as a host name in an app setting, is left as it is and listed on standard error so you can check it. Write <code>--values</code> with the snapshot's names, and give <code>diff</code> the same file. An entry that names nothing in the snapshot, a resource group, or two resources given one name is refused, and other platforms refuse <code>--rename</code>.</li>
+          <li><strong>In parallel:</strong> on AWS, Azure and Google Cloud, resources that do not depend on each other are created together, 8 at a time by default (<code>--parallel</code>).</li>
+        </ul>
+
+        <h2 id="environment">A whole environment</h2>
+        <p>List every system in one file. The context, profile and project names are your own.</p>
+<pre class="codeblock" tabindex="0"><code>name: prod
+targets:
+  - {name: cluster, platform: kubernetes, context: prod}
+  - {name: aws,     platform: aws, region: us-east-2, profile: prod}
+  - {name: gcp,     platform: gcp, project: my-project}</code></pre>
+<pre class="codeblock" tabindex="0"><code>truthform capture --config prod.yaml --out snap/
+truthform diff    --config prod.yaml --from snap/</code></pre>
+        <p>Kubernetes contexts, AWS regions, Azure subscriptions (<code>subscription:</code>), Google Cloud projects, and GitHub organisations and Cloudflare accounts (<code>account:</code>) can be mixed. Targets are captured in parallel into <code>snap/&lt;target&gt;/</code>, and the environment gets a summary report. A target that cannot be reached is recorded as failed without stopping the others, and the exit code is the worst result. A relative path in the file (<code>baseline</code>, a Kubernetes target's <code>kubeconfig</code>) is relative to the file itself, so the command works from any folder. An AWS, Azure or Google Cloud target the platform throttles can take <code>parallel: 4</code>, as <code>--parallel</code> does for one target. The file is strict: a misspelled key or a missing field fails before anything runs. Restore stays per target, on purpose.</p>
+
+        <h2 id="exit-codes">Exit codes</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Code</th><th scope="col">Meaning</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Code"><code>0</code></td><td data-label="Meaning">Success: the capture is complete, the restore fully applied, or there are no differences.</td></tr>
+              <tr><td data-label="Code"><code>1</code></td><td data-label="Meaning">Error: bad flags, cannot connect, cannot read a snapshot.</td></tr>
+              <tr><td data-label="Code"><code>2</code></td><td data-label="Meaning">Differences found (diff, compare).</td></tr>
+              <tr><td data-label="Code"><code>3</code></td><td data-label="Meaning">Incomplete: the snapshot was written but some types could not be read, or a restore applied only some resources; <code>check</code> found types denied, throttled or failed.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="json">Machine-readable output</h2>
+        <p>Add <code>--json</code> to <code>capture</code>, <code>diff</code>, <code>restore</code>, <code>compare</code>, <code>check</code> or <code>permissions</code>, with or without <code>--config</code>. Standard output is then one JSON document, named by its <code>schema</code> field (<code>truthform.org/output/v1</code>), and everything meant for a person goes to standard error. The exit code does not change, and a run that fails still prints a document naming the error.</p>
+<pre class="codeblock" tabindex="0"><code>truthform diff --platform aws --region us-east-2 --profile prod --from snap/aws --json | jq '.changes'</code></pre>
+        <p>A capture's document says whether it is <code>complete</code> and lists its <code>gaps</code>, and under <code>throttled</code> the gaps a later capture can close as it is; a diff's lists each change with its <code>kind</code> (missing, extra, changed) and <code>fields</code>; a restore's lists each resource with <code>ok</code> and <code>detail</code>.</p>
+
+        <h2 id="graph">As a graph (Azure)</h2>
+        <p><code>truthform graph</code> writes an Azure snapshot as resources and the relationships between them, as JSON, for a tool that maps an estate rather than recreating it, such as an asset inventory or a security graph. It reads only the snapshot, with no login and no request, and both editions have it. Other platforms' snapshots are refused.</p>
+<pre class="codeblock" tabindex="0"><code>truthform graph --from snap/azure --out graph.json
+truthform graph --from snap/azure --subscription "$SUB" --tenant "$TENANT" --out graph.json</code></pre>
+        <ul>
+          <li><strong>Nodes</strong> are resources: <code>id</code>, <code>type</code>, <code>name</code>, <code>group</code>, <code>location</code>, <code>tags</code> and the chosen <code>properties</code>, keyed by path (<code>properties.publicNetworkAccess</code>). A node marked <code>external</code> is something the snapshot refers to but does not hold, such as another subscription's network or a built-in role definition. A node with <code>managedBy</code> is something capture left out because that resource manages it, such as the load balancers and public IPs in an AKS cluster's node group. Only its ID, type and name are known: it was not read, so it says nothing about its address or rules, and a public IP there may only be the cluster's way out. <code>--capture-managed</code> reads them.</li>
+          <li><strong>Edges</strong> run from the resource holding a relationship to the one it names, each with a <code>kind</code>: <code>references</code> (<code>path</code> says which field), <code>child-of</code>, <code>extension-of</code> (a role assignment, lock, policy assignment or diagnostic setting on what it is attached to), <code>depends-on</code> (a resource created by another, such as an AKS cluster's managed group) and <code>managed-by</code> (something capture left out, to what manages it). A reference to a part kept inside a resource, such as a subnet, goes to that resource, and <code>subresource</code> names the part (<code>subnets/app</code>).</li>
+          <li><strong><code>--types</code></strong> chooses each type's properties. The built-in <code>security</code>, the default, keeps network exposure, identity and access, encryption, public access, private endpoints and diagnostics, and leaves out types with no security signal. <code>none</code> gives every resource without properties, and a file in the same format gives your own.</li>
+          <li><strong>IDs</strong> keep the snapshot's subscription and tenant placeholders unless <code>--subscription</code> and <code>--tenant</code> give the real ones. Another subscription a resource refers to keeps its real ID either way. A manager is taken to be in the captured subscription, because nothing in a snapshot says which subscription that is.</li>
+          <li><strong><code>generator</code></strong> names the version and commit that wrote the file.</li>
+        </ul>
+        <p>The same snapshot gives the same graph, byte for byte, from any binary of one release. Another build can change the file even where nothing else has changed, so across builds compare <code>nodes</code> and <code>edges</code>. A graph holds what its snapshot holds, so keep it as carefully.</p>
+
+        <h2 id="limits">Known limits</h2>
+        <ul>
+          <li>Data is never captured, only configuration.</li>
+          <li>S3 bucket names are global: a bucket cannot be restored under the same name while the original exists, or in another region shortly after it was deleted.</li>
+          <li>A few fields are accepted on write but never read back, such as a GitHub environment's wait timer. The snapshot names them (<code>truthform.org/unreadable</code>) and a restore says it could not carry them.</li>
+          <li>A Log Analytics workspace's data sources can only be listed one kind at a time. Truthform lists every kind Azure's definition names; a data source of a kind it does not name is not found.</li>
+          <li>Proven against real systems so far: Kubernetes; AWS (capture of a whole region; restore of the 17 types the drill uses, an IAM role, a managed policy and a Lambda function among them; <code>--update</code> of resources drifted by hand; restore into another region); Azure; Google Cloud; GitHub and Cloudflare capture. GitHub and Cloudflare restore, and Google Compute, are proven against simulated APIs only.</li>
+          <li>On AWS, restores into another account have not been run against real AWS yet, nor IAM beyond a role and a customer managed policy.</li>
+          <li>On Azure, <code>--rename</code> is proven by the simulated drill, which restores a renamed snapshot and gets an empty diff, and by an offline run over a real snapshot of about 1,600 objects. A real restore into a second subscription has been run; its results are not published here yet.</li>
+          <li>On Azure, a role assignment for a principal the snapshot does not hold (a person, a group, an application) keeps its object ID, so it fails with <code>PrincipalNotFound</code> in another tenant: Truthform does not map principals across tenants.</li>
+          <li>On Azure, within the source's tenant, role assignment names are taken while the source exists, so pass <code>--new-role-assignment-ids</code> to the restore and to a diff of that target. A custom role's ID is unique per tenant too. A restore will not take over one other subscriptions use: add the target to its <code>assignableScopes</code> and run again, and the role is then taken as it is, never changed.</li>
+          <li>On Azure, a VNet peering to a network in another subscription keeps that network's ID, so a restore connects to it if the identity may. Check any before restoring.</li>
+          <li>On Azure, the rule for what an AKS cluster made rests on one real cluster, and something a person put in a node group whose type AKS also makes, such as an NSG, is skipped as the cluster's.</li>
+          <li>On Azure, a snapshot does not name the subscription, apart from the title of <code>REPORT.md</code> and a resource whose own name holds it, such as <code>DefaultWorkspace-&lt;id&gt;-EUS</code>. A graph does not name it unless you pass <code>--subscription</code>.</li>
+        </ul>
+
+        <nav class="doc-next" aria-label="Next and previous">
+          <a href="/docs/">&larr; Overview</a>
+          <a href="/docs/permissions/">Permissions &rarr;</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-brand">
+        <img src="/logo.svg" alt="" width="20" height="20">
+        <span>Truthform</span>
+      </p>
+      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
+      <p>Not yet released. This site sets no cookies and runs no analytics.</p>
+      <p>&copy; 2026 Truthform</p>
+    </div>
+  </footer>
+</body>
+</html>

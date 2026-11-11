@@ -1,0 +1,806 @@
+/* Truthform site. Hand-written, no build step.
+   Colours are tokens so light and dark mode differ in one place only.
+   No web fonts: system stacks keep the page to two requests and avoid a
+   third-party font host seeing every visitor. */
+
+:root {
+  --bg: #fbfbf8;
+  --bg-alt: #f1f4f1;
+  --surface: #ffffff;
+  --text: #15191e;
+  --muted: #4a5560;
+  --border: #dbe1dd;
+  --accent: #0f766e;
+  --accent-strong: #115e59;
+  --accent-soft: #e2f3ef;
+  --on-accent: #ffffff;
+  --strand-a: #0f766e;
+  --strand-b: #334155;
+  --plan-bg: #eef1f4;
+  --plan-text: #3b4652;
+  --code-bg: #10171e;
+  --code-border: #10171e;
+  --code-text: #e4e9ee;
+  --code-muted: #93a1ae;
+  --code-accent: #5eead4;
+  --code-dir: #93c5fd;
+  --focus: #1d4ed8;
+  --shadow: 0 1px 2px rgb(16 23 30 / 6%), 0 8px 24px rgb(16 23 30 / 8%);
+
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --radius: 12px;
+  --gutter: clamp(16px, 4vw, 32px);
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c1014;
+    --bg-alt: #11171c;
+    --surface: #151c22;
+    --text: #e7ebee;
+    --muted: #a3aeb8;
+    --border: #26313a;
+    --accent: #5eead4;
+    --accent-strong: #99f6e4;
+    --accent-soft: #0f2e2b;
+    --on-accent: #052e2a;
+    --strand-a: #5eead4;
+    --strand-b: #cbd5e1;
+    --plan-bg: #1c252d;
+    --plan-text: #c3ccd4;
+    /* In dark mode the code panels sit darker than the page and need a
+       border, or they merge into the background. */
+    --code-bg: #070a0d;
+    --code-border: #26313a;
+    --focus: #93c5fd;
+    --shadow: none;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  /* Deliberately no overflow-x: hidden/clip here. It would hide a layout
+     bug instead of fixing it, and make the 360px no-scroll check pass
+     while content is cut off. */
+}
+
+img, svg { display: block; max-width: 100%; }
+
+h1, h2, h3 { line-height: 1.15; margin: 0 0 0.5em; letter-spacing: -0.02em; }
+p { margin: 0 0 1em; }
+
+a { color: var(--accent); text-underline-offset: 0.18em; }
+a:hover { color: var(--accent-strong); }
+
+/* One visible focus style for every interactive element, keyboard only. */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--accent-soft);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -100px;
+  z-index: 10;
+  background: var(--surface);
+  color: var(--text);
+  padding: 8px 14px;
+  border: 2px solid var(--focus);
+  border-radius: 8px;
+}
+.skip-link:focus { top: 12px; }
+
+/* Header */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 64px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+.brand:hover { color: var(--text); }
+.brand-mark { width: 30px; height: 30px; flex: none; }
+.brand-mark .sa { fill: var(--strand-a); }
+.brand-mark .sb { fill: var(--strand-b); }
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nav a {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.nav a:hover { color: var(--text); background: var(--bg-alt); }
+.nav .nav-cta {
+  color: var(--accent);
+  border: 1px solid var(--border);
+}
+
+/* aria-current="page" on the docs index, "true" on the pages under it. */
+.nav a[aria-current] { color: var(--text); background: var(--bg-alt); }
+
+/* The home page is one scroll, so on narrow screens its section links are
+   dropped rather than squeezed. The call to action stays, and so does Docs
+   (.nav-keep): it is the only link that leads off the page, and the docs'
+   own navigation is not reachable any other way from the home page. */
+@media (max-width: 680px) {
+  .nav li:not(:last-child):not(.nav-keep) { display: none; }
+}
+/* At 360px with a scrollbar, the full padding wrapped "Follow along" onto
+   two lines and doubled the header's height on the docs pages. */
+.nav a { white-space: nowrap; }
+@media (max-width: 400px) {
+  .nav a { padding: 8px 9px; }
+  .header-inner { gap: 8px; }
+}
+
+/* Hero */
+
+.hero { padding: clamp(48px, 9vw, 104px) 0 clamp(16px, 3vw, 32px); }
+
+.hero-grid {
+  display: grid;
+  gap: clamp(32px, 5vw, 56px);
+  align-items: center;
+}
+@media (min-width: 960px) {
+  .hero-grid { grid-template-columns: 1fr 1.1fr; }
+}
+/* Grid children default to min-width: auto, which lets a wide <pre> push the
+   column (and the page) wider than the screen. */
+.hero-grid > * { min-width: 0; }
+
+.eyebrow {
+  margin-bottom: 16px;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: clamp(2.25rem, 5.4vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  margin-bottom: 20px;
+}
+h1 .accent { color: var(--accent); }
+
+.lede {
+  font-size: clamp(1.1rem, 2.2vw, 1.25rem);
+  color: var(--muted);
+  max-width: 36em;
+  margin-bottom: 28px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  text-align: center;
+}
+.btn-primary { background: var(--accent); color: var(--on-accent); }
+.btn-primary:hover { background: var(--accent-strong); color: var(--on-accent); }
+.btn-ghost { border-color: var(--border); color: var(--text); background: var(--surface); }
+.btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+.status-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge-live { background: var(--accent-soft); color: var(--accent-strong); }
+.badge-plan { background: var(--plan-bg); color: var(--plan-text); }
+
+/* Code panels */
+
+.snapshot-card,
+.terminal {
+  margin: 0;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.card-bar {
+  display: flex;
+  gap: 7px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(255 255 255 / 7%);
+}
+.card-bar span {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 16%);
+}
+
+pre {
+  margin: 0;
+  padding: 18px 20px 20px;
+  /* Long commands scroll inside the panel rather than widening the page.
+     tabindex="0" on each <pre> makes that scrollable area reachable by
+     keyboard. */
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 25%) transparent;
+  color: var(--code-text);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1.7;
+  tab-size: 2;
+}
+pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+  overflow-wrap: normal;
+}
+pre:focus-visible { outline-offset: -3px; border-radius: 0; }
+
+/* Commands are line-broken to fit a 360px screen, but the snapshot tree's
+   object paths cannot be shortened without misrepresenting the layout, so
+   they scroll. Without a cue that scrolling content looks simply cut off:
+   the "local" covers travel with the content and hide the "scroll" shadows
+   at whichever end has nothing more to show. */
+pre {
+  background:
+    linear-gradient(to right, var(--code-bg) 40%, transparent) left / 32px 100% no-repeat local,
+    linear-gradient(to left, var(--code-bg) 40%, transparent) right / 32px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(255 255 255 / 22%), transparent) left / 12px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(255 255 255 / 22%), transparent) right / 12px 100% no-repeat scroll;
+  background-color: var(--code-bg);
+}
+
+.tree { font-size: 0.8rem; }
+
+@media (max-width: 480px) {
+  pre { padding: 16px 14px; font-size: 0.76rem; }
+  .tree { font-size: 0.75rem; }
+}
+
+.c-com { color: var(--code-muted); }
+.c-prompt { color: var(--code-accent); user-select: none; }
+.c-out { color: var(--code-accent); }
+.c-dir { color: var(--code-dir); font-weight: 600; }
+
+figcaption {
+  padding: 12px 20px 16px;
+  color: var(--code-muted);
+  font-size: 0.875rem;
+  border-top: 1px solid rgb(255 255 255 / 7%);
+}
+/* The page's light code chip would sit as a bright patch on the dark panel. */
+figcaption code { background: rgb(255 255 255 / 10%); color: var(--code-text); }
+
+/* Sections */
+
+.section { padding: clamp(56px, 8vw, 96px) 0; }
+.section-alt { background: var(--bg-alt); border-block: 1px solid var(--border); }
+
+.section-title { font-size: clamp(1.75rem, 3.6vw, 2.4rem); font-weight: 750; }
+.section-intro { color: var(--muted); max-width: 40em; margin-bottom: 32px; font-size: 1.1rem; }
+.section-title + :not(.section-intro) { margin-top: 28px; }
+
+/* Comparison */
+
+.compare {
+  display: grid;
+  gap: 20px;
+}
+@media (min-width: 760px) {
+  .compare { grid-template-columns: 1fr 1fr; }
+}
+.compare-col {
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.compare-col h3 { font-size: 1.15rem; color: var(--muted); }
+.compare-col p { margin: 0; color: var(--muted); }
+.compare-col-us { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.compare-col-us h3 { color: var(--accent); }
+.compare-col-us p { color: var(--text); }
+
+/* Steps */
+
+.steps {
+  list-style: none;
+  margin: 0 0 40px;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+@media (min-width: 760px) {
+  .steps { grid-template-columns: repeat(3, 1fr); }
+}
+.step {
+  position: relative;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.step-num {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 14px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 800;
+  font-family: var(--font-mono);
+}
+.step h3 { font-size: 1.2rem; }
+.step p { margin: 0; color: var(--muted); }
+
+.terminal { min-width: 0; }
+
+/* Features */
+
+.features {
+  list-style: none;
+  margin: 0 0 40px;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+}
+.feature {
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-top: 3px solid var(--accent);
+}
+.feature h3 { font-size: 1.05rem; }
+.feature p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+
+.drill {
+  padding: clamp(22px, 4vw, 36px);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.drill h3 { font-size: 1.35rem; }
+.drill p { max-width: 46em; }
+.drill code { background: var(--surface); }
+
+.chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chips li {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+/* Roadmap */
+
+.roadmap {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+}
+.roadmap li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 22px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+.roadmap h3 { font-size: 1.05rem; margin-bottom: 4px; }
+.roadmap p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+
+/* Follow along */
+
+.follow {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+.follow h2 { font-size: clamp(1.75rem, 3.6vw, 2.4rem); }
+.follow p { color: var(--muted); font-size: 1.1rem; }
+.contact {
+  display: inline-block;
+  margin: 8px 0 0;
+  padding: 10px 18px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--text);
+}
+
+/* Footer */
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 28px 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+.footer-inner p { margin: 0; }
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* 404 */
+
+.notfound {
+  min-height: 60vh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  /* Block only: the shorthand "64px 0" zeroed .wrap's side gutter, and on a
+     phone the buttons touched the screen edges. */
+  padding-block: 64px;
+}
+.notfound .code { font-family: var(--font-mono); color: var(--accent); font-weight: 700; margin-bottom: 8px; }
+.notfound p { color: var(--muted); }
+.notfound .actions { justify-content: center; margin: 0; }
+
+/* Proof list and measurements (home page) */
+
+.proof {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.proof li {
+  display: grid;
+  gap: 2px 20px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+@media (min-width: 760px) {
+  .proof li { grid-template-columns: 160px minmax(0, 1fr); }
+}
+.proof li > strong { font-size: 0.97rem; }
+.proof li > span { color: var(--muted); font-size: 0.97rem; }
+.proof code { background: var(--accent-soft); }
+/* "Simulated only" must not read like a pass: it is the one row that has
+   not met the real system. */
+.proof li.proof-sim { border-style: dashed; background: transparent; }
+
+.stats {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+.stats li {
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 0.93rem;
+}
+.stats .stat {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.drill .fine { color: var(--muted); font-size: 0.93rem; margin: 0; }
+
+/* Docs */
+
+.docs { padding: clamp(28px, 5vw, 56px) 0 clamp(56px, 8vw, 96px); }
+
+.docs-grid { display: grid; gap: 28px; }
+@media (min-width: 900px) {
+  .docs-grid { grid-template-columns: 210px minmax(0, 1fr); gap: 56px; }
+}
+/* Same trap as the hero grid: a wide <pre> or table would otherwise widen
+   the column past the screen. */
+.docs-grid > * { min-width: 0; }
+
+.docs-nav h2 {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.docs-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.docs-nav a {
+  display: block;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.docs-nav a:hover { color: var(--text); background: var(--bg-alt); }
+.docs-nav a[aria-current="page"] {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+@media (min-width: 900px) {
+  .docs-nav > div { position: sticky; top: 88px; }
+  .docs-nav ul { flex-direction: column; gap: 2px; }
+  .docs-nav a { border-color: transparent; }
+}
+
+.prose { max-width: 46rem; }
+.prose h1 { font-size: clamp(2rem, 4.4vw, 2.75rem); margin-bottom: 16px; }
+.prose h2 {
+  margin-top: 2.2em;
+  font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+  font-weight: 750;
+}
+.prose h3 { margin-top: 1.6em; font-size: 1.12rem; }
+.prose .lede { margin-bottom: 24px; }
+.prose ul, .prose ol { margin: 0 0 1em; padding-left: 1.3em; }
+.prose li + li { margin-top: 0.35em; }
+.prose h2[id], .prose h3[id] { scroll-margin-top: 80px; }
+
+.codeblock {
+  margin: 0 0 1.25em;
+  border: 1px solid var(--code-border);
+  border-radius: 10px;
+  font-size: 0.82rem;
+}
+@media (max-width: 480px) {
+  .codeblock { font-size: 0.74rem; }
+}
+
+.note {
+  margin: 0 0 1.5em;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.note p:last-child { margin: 0; }
+.note code { background: var(--surface); }
+
+.table-wrap { margin: 0 0 1.5em; }
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.table th, .table td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+.table th {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+/* Same column widths in every table on a page, so the tables line up. */
+.table th:first-child { width: 17%; }
+.table th:nth-child(3) { width: 32%; }
+/* A name in the first column (describe_type) must not break mid-word. */
+.table td:first-child code { white-space: nowrap; overflow-wrap: normal; }
+/* A status badge sits on its own line above its explanation. The <br> in
+   the markup does that for readers without this stylesheet; with it, the
+   badge is a block and the <br> would add a blank line. */
+/* block + fit-content, not display: table: a table inherits the outer
+   border-collapse: collapse, and a collapsed table ignores its padding. */
+.table td > .badge:first-child { display: block; width: fit-content; margin: 0 0 6px; }
+.table td > .badge + br { display: none; }
+
+/* On a phone, three columns of sentences become slivers, and a scrolling
+   table hides the Status column, which is the part that must not be
+   missed. Each row becomes a card instead, labelled from data-label. */
+@media (max-width: 640px) {
+  .table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .table, .table tbody, .table tr, .table td { display: block; }
+  .table tr {
+    margin-bottom: 12px;
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+  }
+  .table td { padding: 8px 0; }
+  .table td:last-child { border-bottom: 0; }
+  .table td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+}
+
+.badge-warn { background: var(--plan-bg); color: var(--plan-text); border: 1px dashed var(--muted); }
+
+/* .prose prefixes win over .prose ul's list indent, which would otherwise
+   push the cards in from the text edge. */
+.prose .doc-cards {
+  list-style: none;
+  margin: 0 0 1.5em;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+.prose .doc-cards li + li { margin-top: 0; }
+.doc-cards a {
+  display: block;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+.doc-cards a:hover { border-color: var(--accent); }
+.doc-cards strong { display: block; margin-bottom: 4px; color: var(--accent); font-size: 1.05rem; }
+.doc-cards span { color: var(--muted); font-size: 0.97rem; }
+
+.doc-next {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 48px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.footer-links { display: inline-flex; flex-wrap: wrap; gap: 4px 16px; }
+
+/* The sticky header would otherwise cover the heading an in-page link
+   jumps to. */
+section[id] { scroll-margin-top: 72px; }

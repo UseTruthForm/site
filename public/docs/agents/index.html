@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Using Truthform with agents | Truthform docs</title>
+  <meta name="description" content="truthform mcp serves read-only tools to AI agents over the Model Context Protocol: describe any resource type's fields, capture, diff, read reports, and say what access to grant and check it. There is no restore tool.">
+  <link rel="canonical" href="https://usetruthform.com/docs/agents/">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c1014" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" aria-label="Truthform home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <g class="sb"><rect x="4" y="4" width="24" height="4.5" rx="2.25"/></g>
+          <g class="sa"><rect x="14.75" y="8.5" width="2.5" height="9"/><path d="M16 16.2Q16.6 16.2 17 16.7L21.2 21.8Q21.8 22.5 21.3 23.3L16.9 29.4Q16 30.6 15.1 29.4L10.7 23.3Q10.2 22.5 10.8 21.8L15 16.7Q15.4 16.2 16 16.2Z"/></g>
+        </svg>
+        <span>Truthform</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="nav">
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#roadmap">Roadmap</a></li>
+          <li class="nav-keep"><a href="/docs/" aria-current="true">Docs</a></li>
+          <li><a class="nav-cta" href="/#follow">Follow along</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="docs">
+    <div class="wrap docs-grid">
+      <nav class="docs-nav" aria-label="Documentation">
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs/">Overview</a></li>
+            <li><a href="/docs/getting-started/">Getting started</a></li>
+            <li><a href="/docs/permissions/">Permissions</a></li>
+            <li><a href="/docs/agents/" aria-current="page">Agents (MCP)</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <article class="prose">
+        <h1>Using Truthform with agents</h1>
+        <p class="lede">An agent that writes infrastructure needs to know what a resource takes before it writes one. Truthform already reads that from each platform's published schemas to capture and restore, and <code>truthform mcp</code> tells an agent the same thing over the Model Context Protocol.</p>
+
+        <div class="note">
+          <p><strong>Read-only, with no restore tool.</strong> No tool can change anything in your systems, and none grants access: the permissions tool only says what to grant. Restoring creates and changes live resources, so it stays a command a person runs with the snapshot in front of them.</p>
+        </div>
+
+        <h2 id="setup">Add it to a client</h2>
+        <p>The server speaks JSON-RPC on standard input and output, like any local MCP server, and takes no arguments. With <code>truthform</code> on your <code>PATH</code>, add it to a client's configuration:</p>
+<pre class="codeblock" tabindex="0"><code>{"mcpServers": {"truthform": {"command": "truthform", "args": ["mcp"]}}}</code></pre>
+        <p>It supports MCP protocol revisions 2024-11-05, 2025-03-26, 2025-06-18 and 2025-11-25.</p>
+
+        <h2 id="tools">Tools</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Tool</th><th scope="col">What it does</th><th scope="col">Main arguments</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Tool"><code>platforms</code></td><td data-label="What it does">What Truthform covers on each platform, and each platform's own MCP server to use alongside it.</td><td data-label="Main arguments">None</td></tr>
+              <tr><td data-label="Tool"><code>list_types</code></td><td data-label="What it does">The resource types on a platform, from its published schemas: the AWS registry, Azure's definitions, a Google API's Discovery document, a SaaS provider's OpenAPI description.</td><td data-label="Main arguments"><code>platform</code>; optional <code>filter</code>; for AWS, <code>region</code> (whose schema bundle); for Google Cloud, <code>api</code> and <code>version</code></td></tr>
+              <tr><td data-label="Tool"><code>describe_type</code></td><td data-label="What it does">Every field of a type: which are required, read-only (set by the platform), write-only, secret, or fixed at creation (changing one replaces the resource), with the platform's documentation links.</td><td data-label="Main arguments"><code>platform</code>, <code>type</code>; for Google Cloud, <code>api</code>; optional <code>version</code>, <code>region</code> (AWS), <code>max_depth</code> (default 3)</td></tr>
+              <tr><td data-label="Tool"><code>capture</code></td><td data-label="What it does">Reads a live account, subscription, project, cluster or organisation into a new snapshot on local disk, with its <code>REPORT.md</code>, and returns the summary.</td><td data-label="Main arguments"><code>platform</code>, <code>out</code>, and the target: <code>region</code>, <code>profile</code>, <code>subscription</code>, <code>project</code>, <code>account</code> or <code>context</code>; optional <code>types</code>, <code>baseline</code></td></tr>
+              <tr><td data-label="Tool"><code>diff</code></td><td data-label="What it does">Compares a live target with a snapshot and lists the differences.</td><td data-label="Main arguments"><code>platform</code>, <code>from</code>, and the target, as for capture</td></tr>
+              <tr><td data-label="Tool"><code>permissions</code></td><td data-label="What it does">What to grant Truthform on a platform, for capture or for restore: the template to deploy and every command to check, grant, verify and remove it, with your values filled in, and which grants have been verified. It grants nothing. A value it needs and was not given is an error saying how to find it, never a placeholder.</td><td data-label="Main arguments"><code>platform</code>; optional <code>access</code> (<code>capture</code> or <code>restore</code>) and the platform's own values, such as <code>account</code>, <code>subscription</code>, <code>project</code> or <code>context</code></td></tr>
+              <tr><td data-label="Tool"><code>check_access</code></td><td data-label="What it does">Who Truthform runs as, what that identity holds beyond what it needs (root, long-lived keys, write access for a capture), what could not be checked, and what it can read, type by type, from a trial capture written nowhere. A denied type is named as denied, never shown as empty, and a throttled one as throttled, not denied.</td><td data-label="Main arguments"><code>platform</code> and the target, as for capture; optional <code>access</code></td></tr>
+              <tr><td data-label="Tool"><code>report</code></td><td data-label="What it does">A snapshot's <code>REPORT.md</code>: what was captured, what was not and why, and what a restore would need.</td><td data-label="Main arguments"><code>from</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The platforms are <code>aws</code>, <code>azure</code>, <code>gcp</code>, <code>github</code> and <code>cloudflare</code>, plus <code>kubernetes</code> for capture, diff, <code>permissions</code> and <code>check_access</code>. Kubernetes types cannot be described yet, because a cluster's schema is its own.</p>
+
+        <h3 id="example">An example</h3>
+        <p>Asked which fields of an SQS queue are fixed at creation, an agent calls <code>describe_type</code> with platform <code>aws</code> and type <code>AWS::SQS::Queue</code>. The answer marks <code>FifoQueue</code> and <code>QueueName</code> as create-only and <code>Arn</code> and <code>QueueUrl</code> as read-only, with a link to AWS's documentation for the type. The agent knows, before writing anything, that renaming the queue would replace it.</p>
+
+        <h2 id="safety">What an agent can and cannot do</h2>
+        <ul>
+          <li><strong>Nothing it calls writes to your systems.</strong> Describing types reads public schemas. Capture, diff and <code>check_access</code> run through the same read-only guard as on the command line, which refuses any request that is not a read before it leaves the machine.</li>
+          <li><strong>Capture writes only a new snapshot.</strong> It writes to local disk, and only into a directory that does not exist yet or is empty, so an agent cannot overwrite an existing snapshot such as a baseline.</li>
+          <li><strong>There is no restore tool.</strong> This is deliberate, not a gap waiting to be filled.</li>
+          <li><strong>Arguments cannot change what runs.</strong> Each tool does one fixed thing. Unknown arguments are dropped, and each value is passed as a single <code>--name=value</code>, so a value such as <code>us-east-2 --update</code> is just an invalid region, not an extra flag.</li>
+          <li><strong>It uses the credentials of the environment it runs in.</strong> Start the server with the same read-only access you would give a capture; see <a href="/docs/permissions/">Permissions</a>.</li>
+        </ul>
+
+        <h2 id="companions">Alongside the platforms' own servers</h2>
+        <p>Truthform says what exists and what each field means. To build or change resources, use the platform's own MCP server next to it; the <code>platforms</code> tool names the ones each provider publishes.</p>
+
+        <nav class="doc-next" aria-label="Next and previous">
+          <a href="/docs/permissions/">&larr; Permissions</a>
+          <a href="/docs/">Overview &rarr;</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-brand">
+        <img src="/logo.svg" alt="" width="20" height="20">
+        <span>Truthform</span>
+      </p>
+      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
+      <p>Not yet released. This site sets no cookies and runs no analytics.</p>
+      <p>&copy; 2026 Truthform</p>
+    </div>
+  </footer>
+</body>
+</html>

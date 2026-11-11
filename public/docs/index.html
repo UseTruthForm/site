@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docs | Truthform</title>
+  <meta name="description" content="How to run Truthform in your own environment: install, capture, diff and restore, the permissions to grant on each platform, and using it with AI agents.">
+  <link rel="canonical" href="https://usetruthform.com/docs/">
+  <!-- Root-absolute paths: the docs sit one or two levels down, and the
+       same header and footer are copied into every page. -->
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c1014" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" aria-label="Truthform home">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <g class="sb"><rect x="4" y="4" width="24" height="4.5" rx="2.25"/></g>
+          <g class="sa"><rect x="14.75" y="8.5" width="2.5" height="9"/><path d="M16 16.2Q16.6 16.2 17 16.7L21.2 21.8Q21.8 22.5 21.3 23.3L16.9 29.4Q16 30.6 15.1 29.4L10.7 23.3Q10.2 22.5 10.8 21.8L15 16.7Q15.4 16.2 16 16.2Z"/></g>
+        </svg>
+        <span>Truthform</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="nav">
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#roadmap">Roadmap</a></li>
+          <li class="nav-keep"><a href="/docs/" aria-current="page">Docs</a></li>
+          <li><a class="nav-cta" href="/#follow">Follow along</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="docs">
+    <div class="wrap docs-grid">
+      <nav class="docs-nav" aria-label="Documentation">
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs/" aria-current="page">Overview</a></li>
+            <li><a href="/docs/getting-started/">Getting started</a></li>
+            <li><a href="/docs/permissions/">Permissions</a></li>
+            <li><a href="/docs/agents/">Agents (MCP)</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <article class="prose">
+        <h1>Documentation</h1>
+        <p class="lede">Truthform is one binary that you run inside your own environment. It reads the live configuration of a Kubernetes cluster, a cloud account or a SaaS organisation into a snapshot of plain YAML, diffs what is running against it, and restores what is missing.</p>
+
+        <div class="note">
+          <p><strong>Pre-release.</strong> Truthform is not released yet. These pages describe the current build, so they are accurate for the binary you would run today, limits included.</p>
+        </div>
+
+        <ul class="doc-cards">
+          <li><a href="/docs/getting-started/"><strong>Getting started</strong><span>Install, credentials, your first capture, then diff, restore, whole environments, exit codes and known limits.</span></a></li>
+          <li><a href="/docs/permissions/"><strong>Permissions</strong><span>What to grant on each platform, for capture and for restore separately, and which grants have been verified.</span></a></li>
+          <li><a href="/docs/agents/"><strong>Using Truthform with agents</strong><span>The MCP server: its tools, what they can and cannot do, and how to add it to a client.</span></a></li>
+        </ul>
+
+        <h2 id="platforms">Platforms</h2>
+        <p>Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare have been run against real systems. On GitHub and Cloudflare that is capture only: restore is proven against simulated APIs. The <a href="/#features">home page</a> lists what each platform's proof covers.</p>
+
+        <h2 id="access">Setting up access</h2>
+        <p><code>truthform permissions --platform &lt;platform&gt;</code> writes the grant Truthform needs as a template, with every command to deploy, verify and remove it, and grants nothing itself. <code>truthform check</code> then says who Truthform is running as, what that identity holds beyond what it needs, and what it can read, type by type. The <a href="/docs/permissions/">permissions page</a> explains each grant.</p>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-brand">
+        <img src="/logo.svg" alt="" width="20" height="20">
+        <span>Truthform</span>
+      </p>
+      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
+      <p>Not yet released. This site sets no cookies and runs no analytics.</p>
+      <p>&copy; 2026 Truthform</p>
+    </div>
+  </footer>
+</body>
+</html>
