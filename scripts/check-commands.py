@@ -24,7 +24,10 @@ known = {}
 
 def flags(cmd):
     if cmd not in known:
-        out = subprocess.run([exe, cmd, "-h"], capture_output=True, text=True)
+        # login takes its provider first, then its flags: "login -h" prints
+        # only a usage line, which reads here as a command with no flags.
+        argv = [exe, cmd, "cloudflare", "-h"] if cmd == "login" else [exe, cmd, "-h"]
+        out = subprocess.run(argv, capture_output=True, text=True)
         known[cmd] = set(re.findall(r"^\s+-([\w-]+)", out.stdout + out.stderr, re.M)) | GLOBAL_FLAGS
     return known[cmd]
 
@@ -53,7 +56,7 @@ for page in sorted(glob.glob("public/**/*.html", recursive=True)):
 # Flags named in running text (<code>--zone-map ...</code>) are not tied to a
 # command, so each must exist on at least one. Without this, a renamed flag
 # that the page mentions only in prose passes unnoticed.
-ANY = ["capture", "diff", "restore", "check", "permissions", "compare", "schema-diff", "report", "graph"]
+ANY = ["capture", "diff", "restore", "check", "permissions", "compare", "schema-diff", "report", "graph", "login"]
 everywhere = set().union(*(flags(c) for c in ANY))
 for page in sorted(glob.glob("public/**/*.html", recursive=True)):
     src = re.sub(r"<pre[^>]*>.*?</pre>", "", open(page, encoding="utf-8").read(), flags=re.S)
