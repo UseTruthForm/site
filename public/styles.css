@@ -240,6 +240,11 @@ h1 {
   margin-bottom: 20px;
 }
 h1 .accent { color: var(--accent); }
+/* The headline is two halves that mirror each other. Each sits on its own
+   lines and is balanced, so both break the same way ("Capture what / you
+   run," over "deploy what / you captured."). Left to wrap as one sentence
+   it broke mid-phrase: "run, deploy what". */
+h1 .h1-line { display: block; text-wrap: balance; }
 
 .lede {
   font-size: clamp(1.1rem, 2.2vw, 1.25rem);
