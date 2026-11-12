@@ -18,7 +18,7 @@ README, with its deployment notes, would have been published at
 | --- | --- |
 | `index.html` | The home page |
 | `docs/index.html` | Docs overview, linking the pages below |
-| `docs/getting-started/index.html` | Install, credentials, capture, diff, restore, environments, exit codes, `--json`, known limits |
+| `docs/getting-started/index.html` | Install, credentials, the Cloudflare sign-in, capture, diff, restore (with `--dry-run` and `--subdomain`), environments, exit codes, `--json`, the Azure graph, known limits |
 | `docs/permissions/index.html` | What to grant per platform, each marked verified or expected as in core's `docs/permissions.md` |
 | `docs/agents/index.html` | The MCP server (`truthform mcp`): tools, read-only rules, no restore tool |
 | `styles.css` | All styling, shared by every page; light and dark mode via `prefers-color-scheme` |
