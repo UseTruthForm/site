@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Truthform: capture what you run, recreate it anywhere</title>
-  <meta name="description" content="Truthform is reverse infrastructure-as-code. It reads your live systems through each platform's own APIs and writes a normalised snapshot you can diff and redeploy. Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare; early development.">
+  <title>TruthForm: capture what you run, deploy what you captured</title>
+  <meta name="description" content="TruthForm is reverse infrastructure-as-code. It reads your live systems through each platform's own APIs and writes a normalised snapshot you can diff and redeploy. Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare; early development.">
   <link rel="canonical" href="https://usetruthform.com/">
   <!-- Root-absolute paths throughout, so every page resolves the same
        files whatever its depth (the docs live under /docs/). -->
@@ -14,7 +14,7 @@
   <meta name="theme-color" content="#0c1014" media="(prefers-color-scheme: dark)">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://usetruthform.com/">
-  <meta property="og:title" content="Truthform: capture what you run, recreate it anywhere">
+  <meta property="og:title" content="TruthForm: capture what you run, deploy what you captured">
   <meta property="og:description" content="Reverse infrastructure-as-code. Read the live system, write a redeployable snapshot. No state file.">
   <link rel="stylesheet" href="/styles.css">
 </head>
@@ -23,14 +23,14 @@
 
   <header class="site-header">
     <div class="wrap header-inner">
-      <a class="brand" href="#top" aria-label="Truthform home">
+      <a class="brand" href="#top" aria-label="TruthForm home">
         <!-- Inline rather than <img src="logo.svg"> so the mark follows the
              page's colour tokens, including dark mode. -->
         <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <g class="sb"><rect x="8" y="5" width="48" height="6" rx="1.2"/><rect x="28.6" y="27" width="6.8" height="3.6" rx=".8"/><path d="M30.5 53.2H33.5L32.4 57.2Q32 58 31.6 57.2Z"/><rect x="24" y="59.6" width="16" height="2" rx="1"/></g>
           <g class="sa"><rect x="31.1" y="11" width="1.8" height="16.5"/><path d="M27.5 31.8H36.5L39.8 35.6V39.4L33.6 52H30.4L24.2 39.4V35.6Z"/></g>
         </svg>
-        <span>Truthform</span>
+        <span><span class="brand-truth">Truth</span>Form</span>
       </a>
       <nav aria-label="Primary">
         <ul class="nav">
@@ -49,8 +49,8 @@
       <div class="wrap hero-grid">
         <div class="hero-copy">
           <p class="eyebrow">Reverse infrastructure-as-code</p>
-          <h1 id="hero-title">Capture what you run. <span class="accent">Recreate it anywhere.</span></h1>
-          <p class="lede">Truthform reads your live systems through each platform's own APIs and writes a normalised snapshot you can review, diff and redeploy. The running system is the source of truth, so there is no state file to manage.</p>
+          <h1 id="hero-title">Capture what you run, <span class="accent">deploy what you captured.</span></h1>
+          <p class="lede">TruthForm reads your live systems through each platform's own APIs and writes a normalised snapshot you can review, diff and redeploy. The running system is the source of truth, so there is no state file to manage.</p>
           <div class="actions">
             <a class="btn btn-primary" href="#follow">Early development: follow along</a>
             <a class="btn btn-ghost" href="/docs/">Read the docs</a>
@@ -85,8 +85,8 @@
             <p>Write the code first, apply it, and keep a state file in step with reality. Anything changed by hand, or created by a tool nobody wrote code for, drifts out of view.</p>
           </div>
           <div class="compare-col compare-col-us">
-            <h3>Truthform</h3>
-            <p>Run things however you already do. Truthform reads what is actually there and writes it down as a snapshot you can restore, diff and review. One binary that runs inside your own environment with your own credentials, with no Terraform or Pulumi dependency.</p>
+            <h3>TruthForm</h3>
+            <p>Run things however you already do. TruthForm reads what is actually there and writes it down as a snapshot you can restore, diff and review. One binary that runs inside your own environment with your own credentials, with no Terraform or Pulumi dependency.</p>
           </div>
         </div>
       </div>
@@ -99,7 +99,7 @@
           <li class="step">
             <span class="step-num" aria-hidden="true">1</span>
             <h3>Capture</h3>
-            <p>Ask the platform which types exist, from its own published schemas, and read every resource. Custom and newly added types need no Truthform code first.</p>
+            <p>Ask the platform which types exist, from its own published schemas, and read every resource. Custom and newly added types need no TruthForm code first.</p>
           </li>
           <li class="step">
             <span class="step-num" aria-hidden="true">2</span>
@@ -115,7 +115,7 @@
 
         <figure class="terminal">
           <div class="card-bar" aria-hidden="true"><span></span><span></span><span></span></div>
-          <pre tabindex="0" aria-label="Example Truthform command-line session"><code><span class="c-com"># Capture a cluster into a snapshot</span>
+          <pre tabindex="0" aria-label="Example TruthForm command-line session"><code><span class="c-com"># Capture a cluster into a snapshot</span>
 <span class="c-prompt">$</span> truthform capture --context prod \
     --out ./snap
 
@@ -227,7 +227,7 @@
       <div class="wrap">
         <div class="follow">
           <h2 id="follow-title">Early development</h2>
-          <p>Truthform is not released yet. It is a private binary you run inside your own environment, with your own credentials. There is no Truthform service behind it, so your configuration stays with you. The <a href="/docs/">docs</a> describe the current build.</p>
+          <p>TruthForm is not released yet. It is a private binary you run inside your own environment, with your own credentials. There is no TruthForm service behind it, so your configuration stays with you. The <a href="/docs/">docs</a> describe the current build.</p>
           <!-- TODO(Dave): replace this paragraph with a real contact (email
                address or sign-up link). Left as plain text on purpose: a
                placeholder link would look like a working contact and quietly
@@ -242,11 +242,11 @@
     <div class="wrap footer-inner">
       <p class="footer-brand">
         <img src="/logo.svg" alt="" width="20" height="20">
-        <span>Truthform</span>
+        <span><span class="brand-truth">Truth</span>Form</span>
       </p>
       <p class="footer-links"><a href="/docs/">Docs</a></p>
       <p>Not yet released. This site sets no cookies and runs no analytics.</p>
-      <p>&copy; 2026 Truthform</p>
+      <p>&copy; 2026 TruthForm</p>
     </div>
   </footer>
 </body>

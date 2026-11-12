@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Getting started | Truthform docs</title>
-  <meta name="description" content="Install Truthform, give it credentials, capture a first snapshot, then diff, restore and capture a whole environment.">
+  <title>Getting started | TruthForm docs</title>
+  <meta name="description" content="Install TruthForm, give it credentials, capture a first snapshot, then diff, restore and capture a whole environment.">
   <link rel="canonical" href="https://usetruthform.com/docs/getting-started/">
   <link rel="icon" href="/logo.svg" type="image/svg+xml">
   <meta name="color-scheme" content="light dark">
@@ -17,12 +17,12 @@
 
   <header class="site-header">
     <div class="wrap header-inner">
-      <a class="brand" href="/" aria-label="Truthform home">
+      <a class="brand" href="/" aria-label="TruthForm home">
         <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <g class="sb"><rect x="8" y="5" width="48" height="6" rx="1.2"/><rect x="28.6" y="27" width="6.8" height="3.6" rx=".8"/><path d="M30.5 53.2H33.5L32.4 57.2Q32 58 31.6 57.2Z"/><rect x="24" y="59.6" width="16" height="2" rx="1"/></g>
           <g class="sa"><rect x="31.1" y="11" width="1.8" height="16.5"/><path d="M27.5 31.8H36.5L39.8 35.6V39.4L33.6 52H30.4L24.2 39.4V35.6Z"/></g>
         </svg>
-        <span>Truthform</span>
+        <span><span class="brand-truth">Truth</span>Form</span>
       </a>
       <nav aria-label="Primary">
         <ul class="nav">
@@ -55,8 +55,8 @@
         <p class="lede">Install the binary, point it at a system with read-only credentials, and capture a snapshot. Then diff it against what is running, or restore it somewhere else.</p>
 
         <h2 id="install">Install</h2>
-        <p>Truthform is one binary with nothing else to install. It comes as an archive per platform: Linux, macOS and Windows, each for amd64 and arm64, in two editions. That is 12 archives (zip for Windows, tar.gz for the rest) and a <code>SHA256SUMS</code> file to check them against.</p>
-        <p>Truthform is not publicly released yet, so there is no download page: archives are sent to early users directly.</p>
+        <p>TruthForm is one binary with nothing else to install. It comes as an archive per platform: Linux, macOS and Windows, each for amd64 and arm64, in two editions. That is 12 archives (zip for Windows, tar.gz for the rest) and a <code>SHA256SUMS</code> file to check them against.</p>
+        <p>TruthForm is not publicly released yet, so there is no download page: archives are sent to early users directly.</p>
         <p>For Linux on amd64, check the archive, unpack it and confirm the build. The file names carry the version, written here as <code>VERSION</code>.</p>
 <pre class="codeblock" tabindex="0"><code>sha256sum -c SHA256SUMS --ignore-missing
 tar -xzf truthform_VERSION_linux_amd64.tar.gz
@@ -74,7 +74,7 @@ tar -xzf truthform_VERSION_linux_amd64.tar.gz
         </div>
 
         <h2 id="credentials">Credentials</h2>
-        <p>Truthform uses each platform's standard credentials, from the environment it runs in. Give a capture a read-only role and a restore a write role, separately: the <a href="/docs/permissions/">permissions page</a> lists the exact grants.</p>
+        <p>TruthForm uses each platform's standard credentials, from the environment it runs in. Give a capture a read-only role and a restore a write role, separately: the <a href="/docs/permissions/">permissions page</a> lists the exact grants.</p>
         <div class="table-wrap">
           <table class="table">
             <thead><tr><th scope="col">Platform</th><th scope="col">Credentials</th><th scope="col">Target flags</th></tr></thead>
@@ -88,10 +88,10 @@ tar -xzf truthform_VERSION_linux_amd64.tar.gz
             </tbody>
           </table>
         </div>
-        <p>Tokens are read from the environment and never written. A Cloudflare browser sign-in is kept in the operating system's keychain, and <code>truthform logout cloudflare</code> removes it. Besides each platform's API, Truthform downloads the schemas the platforms publish: AWS's CloudFormation registry schemas, Azure's type definitions, Google's Discovery documents, and GitHub's and Cloudflare's OpenAPI descriptions. There is no Truthform service for it to call.</p>
+        <p>Tokens are read from the environment and never written. A Cloudflare browser sign-in is kept in the operating system's keychain, and <code>truthform logout cloudflare</code> removes it. Besides each platform's API, TruthForm downloads the schemas the platforms publish: AWS's CloudFormation registry schemas, Azure's type definitions, Google's Discovery documents, and GitHub's and Cloudflare's OpenAPI descriptions. There is no TruthForm service for it to call.</p>
 
         <h3 id="sign-in">Signing in to Cloudflare</h3>
-        <p>A person at a keyboard needs no Cloudflare token made by hand. <code>truthform login cloudflare</code> opens Cloudflare's sign-in in a browser, you approve Truthform there, and capture, diff and restore then use that sign-in. <code>truthform check</code> does not: it reads only <code>CLOUDFLARE_API_TOKEN</code>.</p>
+        <p>A person at a keyboard needs no Cloudflare token made by hand. <code>truthform login cloudflare</code> opens Cloudflare's sign-in in a browser, you approve TruthForm there, and capture, diff and restore then use that sign-in. <code>truthform check</code> does not: it reads only <code>CLOUDFLARE_API_TOKEN</code>.</p>
 <pre class="codeblock" tabindex="0"><code>truthform login cloudflare
 truthform login cloudflare --no-browser
 truthform logout cloudflare</code></pre>
@@ -99,13 +99,13 @@ truthform logout cloudflare</code></pre>
           <li><strong>What it asks for:</strong> zone read and DNS read, plus DNS write in the full edition only. A sign-in made with the capture-only edition grants no write at all, so a restore needs one made with the full edition.</li>
           <li><strong>Where it is kept:</strong> in the operating system's keychain (Secret Service on Linux, macOS Keychain, Windows Credential Manager), and refreshed as it expires. On a machine with no keychain, such as a bare server, <code>login</code> says so and stores nothing; set the token instead. No file is written in its place. It finds this out only after you have approved the sign-in, so the grant then exists at Cloudflare with nothing kept here: revoke it in the dashboard.</li>
           <li><strong>A token comes first:</strong> <code>CLOUDFLARE_API_TOKEN</code>, when set, is used in place of the sign-in, for CI and machines with no browser. Each run says which of the two it used.</li>
-          <li><strong><code>--no-browser</code></strong> prints the address to open and waits, for when Truthform cannot open a browser itself. The browser still has to be on the same machine: Cloudflare sends the answer back to a port on <code>localhost</code>. A sign-in left unfinished for five minutes ends.</li>
-          <li><strong><code>truthform logout cloudflare</code></strong> forgets the sign-in on this machine. To end the grant itself, revoke Truthform in the Cloudflare dashboard.</li>
-          <li><strong>Your own OAuth client:</strong> set <code>TRUTHFORM_CLOUDFLARE_CLIENT_ID</code> to sign in as another client registered with Cloudflare, such as your organisation's own, in place of Truthform's. Keep it set on every later run, since the sign-in is refreshed under it. The client has to be registered with the redirect addresses <code>http://localhost:8976/oauth/callback</code> and <code>http://localhost:8977/oauth/callback</code>.</li>
+          <li><strong><code>--no-browser</code></strong> prints the address to open and waits, for when TruthForm cannot open a browser itself. The browser still has to be on the same machine: Cloudflare sends the answer back to a port on <code>localhost</code>. A sign-in left unfinished for five minutes ends.</li>
+          <li><strong><code>truthform logout cloudflare</code></strong> forgets the sign-in on this machine. To end the grant itself, revoke TruthForm in the Cloudflare dashboard.</li>
+          <li><strong>Your own OAuth client:</strong> set <code>TRUTHFORM_CLOUDFLARE_CLIENT_ID</code> to sign in as another client registered with Cloudflare, such as your organisation's own, in place of TruthForm's. Keep it set on every later run, since the sign-in is refreshed under it. The client has to be registered with the redirect addresses <code>http://localhost:8976/oauth/callback</code> and <code>http://localhost:8977/oauth/callback</code>.</li>
         </ul>
 
         <h2 id="access">Grant access, then check it</h2>
-        <p><code>truthform permissions</code> writes the grant a capture needs, as a template for the platform's own tool, with every command to deploy, verify and remove it. It grants nothing itself. <code>truthform check</code> then says who Truthform runs as, what that identity holds beyond what it needs, and what it can read, type by type, from a trial capture written nowhere. On Azure, with <code>$SUB</code> your subscription ID and <code>$ID</code> the object ID of the service principal Truthform will run as:</p>
+        <p><code>truthform permissions</code> writes the grant a capture needs, as a template for the platform's own tool, with every command to deploy, verify and remove it. It grants nothing itself. <code>truthform check</code> then says who TruthForm runs as, what that identity holds beyond what it needs, and what it can read, type by type, from a trial capture written nowhere. On Azure, with <code>$SUB</code> your subscription ID and <code>$ID</code> the object ID of the service principal TruthForm will run as:</p>
 <pre class="codeblock" tabindex="0"><code>truthform permissions --platform azure --subscription "$SUB" \
     --principal-id "$ID" --principal-type ServicePrincipal
 truthform check --platform azure --subscription "$SUB"</code></pre>
@@ -132,14 +132,14 @@ truthform capture --platform cloudflare --account "$CF_ACCOUNT" --out snap/cloud
         <ul>
           <li><strong>Data:</strong> bucket objects, blobs, database rows, queue messages, volume contents.</li>
           <li><strong>Secret values:</strong> passwords, keys, a webhook's secret, and a webhook URL that is itself a credential (Slack, Discord, Teams, a <code>?token=</code> or <code>user:pass@</code> URL). They are named in the snapshot and supplied at restore.</li>
-          <li><strong>Credentials left as plain configuration in Kubernetes:</strong> a value named like one (<code>*_PASSWORD</code>, <code>*_TOKEN</code>, <code>*_SECRET</code>, <code>API_KEY</code>, <code>*_KEY</code>, <code>*_DSN</code> and similar) in any <code>env</code> list (pod templates, Argo and Tekton steps, a HelmRelease's values) or as a ConfigMap key, and any such value that is a URL with a password in it. It is named in the snapshot (<code>truthform.org/withheld-env</code>), <code>REPORT.md</code> lists it as a finding to move into a Secret, and a restore reads it from the source with <code>--secrets-from-context</code>. Not recognised: a credential in a command argument, inside a config file a ConfigMap holds, or in Helm values outside an <code>env</code> list. Because both sides are withheld, a diff does not show a rotated credential. A snapshot taken before Truthform withheld these values still holds them, including in git history.</li>
+          <li><strong>Credentials left as plain configuration in Kubernetes:</strong> a value named like one (<code>*_PASSWORD</code>, <code>*_TOKEN</code>, <code>*_SECRET</code>, <code>API_KEY</code>, <code>*_KEY</code>, <code>*_DSN</code> and similar) in any <code>env</code> list (pod templates, Argo and Tekton steps, a HelmRelease's values) or as a ConfigMap key, and any such value that is a URL with a password in it. It is named in the snapshot (<code>truthform.org/withheld-env</code>), <code>REPORT.md</code> lists it as a finding to move into a Secret, and a restore reads it from the source with <code>--secrets-from-context</code>. Not recognised: a credential in a command argument, inside a config file a ConfigMap holds, or in Helm values outside an <code>env</code> list. Because both sides are withheld, a diff does not show a rotated credential. A snapshot taken before TruthForm withheld these values still holds them, including in git history.</li>
           <li><strong>What the platform made itself:</strong> default VPCs and subnets, built-in roles, provider-managed policies, a Kubernetes distribution's add-ons, such as what AKS installs and upgrades itself and what an addon manager keeps as shipped (<code>--include-system</code> captures these). Capture a fresh account or cluster once and pass it as <code>--baseline</code> to skip anything identical to it.</li>
           <li><strong>What something else creates and replaces:</strong> on AWS, what a CloudFormation stack or an AWS service owns; on Azure, a resource another resource manages, and what an AKS cluster is recognised to have made in its node group, such as its node scale set and load balancers. Restoring them would fight what makes them, and each scale-out would read as drift. <code>REPORT.md</code> lists each one under "Skipped on purpose" with its reason, and <code>--capture-managed</code> captures them anyway. Something else in a node group, such as a storage account a person put there, is captured, and a restore applies it after the cluster has made the group again. So is a role assignment on the group itself. <code>REPORT.md</code> lists these too, in case one was the cluster's after all, and lists under "Check before relying on a restore" what may not come back: a data disk attached to a VM, a lock on something left out, and everything in a group some other service manages.</li>
           <li><strong>What is only taken to be AKS's:</strong> on Kubernetes, a cluster-scoped object that Eno, the tool AKS manages some of its own objects with, applied or labelled, and that also has an AKS name, group or key. A person's object could carry the same marks, so <code>REPORT.md</code> names each one under "Taken as the platform's", and <code>--capture-platform</code> keeps them.</li>
           <li><strong>What a Kubernetes controller makes:</strong> pods, ReplicaSets and Jobs, which the Deployment, DaemonSet or CronJob that owns them makes again. <code>coverage.yaml</code> records them once per owner rather than once per instance, so new pod names after a rebuilt node, or a new Job run, leave the snapshot unchanged.</li>
         </ul>
         <p>Limit a capture to some types with <code>--types</code>, for example <code>--types 'AWS::EC2::*,AWS::IAM::Role'</code>. A full AWS region, about 1,500 types, takes around five minutes. If a read is refused, the capture still writes the snapshot, names the gap and exits 3, so a missing permission never looks like an empty account.</p>
-        <p>Every platform limits how fast it is read, and Truthform waits as each one documents: Azure's <code>Retry-After</code>, Google Cloud's backoff, and GitHub's and Cloudflare's rate-limit headers, sending nothing more once a limit is spent, so Cloudflare never locks the account out. A wait past 15 minutes (GitHub's hourly limit) is not sat out. A read that stays throttled is reported as throttled, never as empty or denied; capture again later. On AWS, Azure and Google Cloud, a lower <code>--parallel</code> (8 calls in flight by default) eases a throttled account.</p>
+        <p>Every platform limits how fast it is read, and TruthForm waits as each one documents: Azure's <code>Retry-After</code>, Google Cloud's backoff, and GitHub's and Cloudflare's rate-limit headers, sending nothing more once a limit is spent, so Cloudflare never locks the account out. A wait past 15 minutes (GitHub's hourly limit) is not sat out. A read that stays throttled is reported as throttled, never as empty or denied; capture again later. On AWS, Azure and Google Cloud, a lower <code>--parallel</code> (8 calls in flight by default) eases a throttled account.</p>
 
         <h2 id="diff">Diff</h2>
 <pre class="codeblock" tabindex="0"><code>truthform diff --platform aws --region us-east-2 --profile prod --from snap/aws</code></pre>
@@ -175,7 +175,7 @@ truthform restore --context staging --from snap/k8s --secrets-from-context prod<
         <ul>
           <li><strong>Say where each record should point.</strong> A copy that still pointed at the source would send test traffic to production, so the restore stops if one would. <code>--address &lt;source-ip&gt;=&lt;target-ip&gt;</code> maps an A or AAAA record, and <code>--target &lt;source-host&gt;=&lt;target-host&gt;</code> maps a CNAME to a host outside the zone, such as an app service or a load balancer. Give the same address or host on both sides to keep it on purpose. Several pairs are separated by commas.</li>
           <li><strong>Only names under the subdomain are written.</strong> The zone is used as it is and never created or changed, and other zones in the snapshot are left out.</li>
-          <li><strong>Each record it writes carries the comment <code>truthform: test.example.com</code>.</strong> Only a record with that comment is Truthform's to change, with <code>--update</code>. A record written before the rename, with <code>stackdna:</code> in its comment, counts too.</li>
+          <li><strong>Each record it writes carries the comment <code>truthform: test.example.com</code>.</strong> Only a record with that comment is TruthForm's to change, with <code>--update</code>. A record written before the rename, with <code>stackdna:</code> in its comment, counts too.</li>
           <li><strong>It reads the zone first and stops before writing anything</strong> when:
             <ul>
               <li>the zone is not in the target account;</li>
@@ -240,13 +240,13 @@ truthform graph --from snap/azure --subscription "$SUB" --tenant "$TENANT" --out
           <li>Data is never captured, only configuration.</li>
           <li>S3 bucket names are global: a bucket cannot be restored under the same name while the original exists, or in another region shortly after it was deleted.</li>
           <li>A few fields are accepted on write but never read back, such as a GitHub environment's wait timer. The snapshot names them (<code>truthform.org/unreadable</code>) and a restore says it could not carry them.</li>
-          <li>A Log Analytics workspace's data sources can only be listed one kind at a time. Truthform lists every kind Azure's definition names; a data source of a kind it does not name is not found.</li>
+          <li>A Log Analytics workspace's data sources can only be listed one kind at a time. TruthForm lists every kind Azure's definition names; a data source of a kind it does not name is not found.</li>
           <li>Proven against real systems so far: Kubernetes; AWS (capture of a whole region; restore of the 17 types the drill uses, an IAM role, a managed policy and a Lambda function among them; <code>--update</code> of resources drifted by hand; restore into another region); Azure; Google Cloud; GitHub and Cloudflare capture. GitHub and Cloudflare restore, and Google Compute, are proven against simulated APIs only.</li>
           <li>On Cloudflare, a <code>--subdomain</code> restore has not yet written to a real zone, and the browser sign-in has not been tried on Windows or macOS.</li>
           <li>On Cloudflare, a record is matched by its type, name and content together, so one whose content changed is a different record and <code>--update</code> does not change the old one. A <code>--subdomain</code> restore stops and asks for the old one to be deleted first. A restore without <code>--subdomain</code> creates the new record beside the old.</li>
           <li>On AWS, restores into another account have not been run against real AWS yet, nor IAM beyond a role and a customer managed policy.</li>
           <li>On Azure, <code>--rename</code> is proven by the simulated drill, which restores a renamed snapshot and gets an empty diff, and by an offline run over a real snapshot of about 1,600 objects. A real restore into a second subscription has been run; its results are not published here yet.</li>
-          <li>On Azure, a role assignment for a principal the snapshot does not hold (a person, a group, an application) keeps its object ID, so it fails with <code>PrincipalNotFound</code> in another tenant: Truthform does not map principals across tenants.</li>
+          <li>On Azure, a role assignment for a principal the snapshot does not hold (a person, a group, an application) keeps its object ID, so it fails with <code>PrincipalNotFound</code> in another tenant: TruthForm does not map principals across tenants.</li>
           <li>On Azure, within the source's tenant, role assignment names are taken while the source exists, so pass <code>--new-role-assignment-ids</code> to the restore and to a diff of that target. A custom role's ID is unique per tenant too. A restore will not take over one other subscriptions use: add the target to its <code>assignableScopes</code> and run again, and the role is then taken as it is, never changed.</li>
           <li>On Azure, a VNet peering to a network in another subscription keeps that network's ID, so a restore connects to it if the identity may. Check any before restoring.</li>
           <li>On Azure, the rule for what an AKS cluster made rests on one real cluster, and something a person put in a node group whose type AKS also makes, such as an NSG, is skipped as the cluster's.</li>
@@ -265,11 +265,11 @@ truthform graph --from snap/azure --subscription "$SUB" --tenant "$TENANT" --out
     <div class="wrap footer-inner">
       <p class="footer-brand">
         <img src="/logo.svg" alt="" width="20" height="20">
-        <span>Truthform</span>
+        <span><span class="brand-truth">Truth</span>Form</span>
       </p>
       <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
       <p>Not yet released. This site sets no cookies and runs no analytics.</p>
-      <p>&copy; 2026 Truthform</p>
+      <p>&copy; 2026 TruthForm</p>
     </div>
   </footer>
 </body>

@@ -1,4 +1,4 @@
-# Truthform website
+# TruthForm website
 
 Source for the public website at usetruthform.com. Hand-written HTML and CSS:
 no framework, no build step, no JavaScript, no analytics, no third-party

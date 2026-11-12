@@ -1,4 +1,4 @@
-/* Truthform site. Hand-written, no build step.
+/* TruthForm site. Hand-written, no build step.
    Colours are tokens so light and dark mode differ in one place only.
    No web fonts: system stacks keep the page to two requests and avoid a
    third-party font host seeing every visitor. */
@@ -159,6 +159,10 @@ code {
   letter-spacing: -0.01em;
 }
 .brand:hover { color: var(--text); }
+/* The wordmark is TruthForm with "Truth" in the logo's green, in the header
+   and the footer alike. Only the wordmark: the name in running text stays
+   the text colour, or every paragraph would be speckled with green. */
+.brand-truth { color: var(--accent); }
 .brand-mark { width: 30px; height: 30px; flex: none; }
 .brand-mark .sa { fill: var(--strand-a); }
 .brand-mark .sb { fill: var(--strand-b); }
