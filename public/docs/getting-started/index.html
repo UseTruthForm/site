@@ -91,17 +91,17 @@ tar -xzf truthform_VERSION_linux_amd64.tar.gz
         <p>Tokens are read from the environment and never written. A Cloudflare browser sign-in is kept in the operating system's keychain, and <code>truthform logout cloudflare</code> removes it. Besides each platform's API, Truthform downloads the schemas the platforms publish: AWS's CloudFormation registry schemas, Azure's type definitions, Google's Discovery documents, and GitHub's and Cloudflare's OpenAPI descriptions. There is no Truthform service for it to call.</p>
 
         <h3 id="sign-in">Signing in to Cloudflare</h3>
-        <p>Cloudflare needs no token made by hand. <code>truthform login cloudflare</code> opens Cloudflare's sign-in in a browser, you approve Truthform there, and capture, diff and restore then use that sign-in.</p>
+        <p>A person at a keyboard needs no Cloudflare token made by hand. <code>truthform login cloudflare</code> opens Cloudflare's sign-in in a browser, you approve Truthform there, and capture, diff and restore then use that sign-in. <code>truthform check</code> does not: it reads only <code>CLOUDFLARE_API_TOKEN</code>.</p>
 <pre class="codeblock" tabindex="0"><code>truthform login cloudflare
 truthform login cloudflare --no-browser
 truthform logout cloudflare</code></pre>
         <ul>
           <li><strong>What it asks for:</strong> zone read and DNS read, plus DNS write in the full edition only. A sign-in made with the capture-only edition grants no write at all, so a restore needs one made with the full edition.</li>
-          <li><strong>Where it is kept:</strong> in the operating system's keychain (Secret Service on Linux, macOS Keychain, Windows Credential Manager), and refreshed as it expires. On a machine with no keychain, such as a bare server, <code>login</code> says so and stores nothing; set the token instead. No file is written in its place.</li>
+          <li><strong>Where it is kept:</strong> in the operating system's keychain (Secret Service on Linux, macOS Keychain, Windows Credential Manager), and refreshed as it expires. On a machine with no keychain, such as a bare server, <code>login</code> says so and stores nothing; set the token instead. No file is written in its place. It finds this out only after you have approved the sign-in, so the grant then exists at Cloudflare with nothing kept here: revoke it in the dashboard.</li>
           <li><strong>A token comes first:</strong> <code>CLOUDFLARE_API_TOKEN</code>, when set, is used in place of the sign-in, for CI and machines with no browser. Each run says which of the two it used.</li>
           <li><strong><code>--no-browser</code></strong> prints the address to open and waits, for when Truthform cannot open a browser itself. The browser still has to be on the same machine: Cloudflare sends the answer back to a port on <code>localhost</code>. A sign-in left unfinished for five minutes ends.</li>
           <li><strong><code>truthform logout cloudflare</code></strong> forgets the sign-in on this machine. To end the grant itself, revoke Truthform in the Cloudflare dashboard.</li>
-          <li><strong>Your own OAuth client:</strong> set <code>TRUTHFORM_CLOUDFLARE_CLIENT_ID</code> to sign in as another client registered with Cloudflare, such as your organisation's own, in place of Truthform's.</li>
+          <li><strong>Your own OAuth client:</strong> set <code>TRUTHFORM_CLOUDFLARE_CLIENT_ID</code> to sign in as another client registered with Cloudflare, such as your organisation's own, in place of Truthform's. Keep it set on every later run, since the sign-in is refreshed under it. The client has to be registered with the redirect addresses <code>http://localhost:8976/oauth/callback</code> and <code>http://localhost:8977/oauth/callback</code>.</li>
         </ul>
 
         <h2 id="access">Grant access, then check it</h2>
@@ -173,15 +173,23 @@ truthform restore --context staging --from snap/k8s --secrets-from-context prod<
     --subdomain test.example.com --address 192.0.2.1=198.51.100.7 \
     --target app.example.net=app-test.example.net --dry-run</code></pre>
         <ul>
-          <li><strong>Say where each record should point.</strong> A copy that still pointed at the source would send test traffic to production, so the restore stops if one would. <code>--address &lt;source-ip&gt;=&lt;target-ip&gt;</code> maps an A or AAAA record, and <code>--target &lt;source-host&gt;=&lt;target-host&gt;</code> maps a CNAME to a host outside the zone, such as an app service or a load balancer. Give the same host on both sides to keep it on purpose. Several pairs are separated by commas.</li>
+          <li><strong>Say where each record should point.</strong> A copy that still pointed at the source would send test traffic to production, so the restore stops if one would. <code>--address &lt;source-ip&gt;=&lt;target-ip&gt;</code> maps an A or AAAA record, and <code>--target &lt;source-host&gt;=&lt;target-host&gt;</code> maps a CNAME to a host outside the zone, such as an app service or a load balancer. Give the same address or host on both sides to keep it on purpose. Several pairs are separated by commas.</li>
           <li><strong>Only names under the subdomain are written.</strong> The zone is used as it is and never created or changed, and other zones in the snapshot are left out.</li>
-          <li><strong>Each record it writes carries the comment <code>truthform: test.example.com</code>.</strong> Only a record with that comment is Truthform's to change, with <code>--update</code>.</li>
-          <li><strong>It reads the zone first and stops before writing anything</strong> when a record it did not make is at a name it would write; when a record an earlier run made is there with other content, since DNS would then answer with both (delete it first); or when the subdomain is delegated or is a zone of its own.</li>
-          <li><strong>Mail, delegations and ACME records stay out:</strong> MX, SPF, DKIM, DMARC, MTA-STS and autodiscovery records, NS records, and <code>_acme-challenge</code>.</li>
+          <li><strong>Each record it writes carries the comment <code>truthform: test.example.com</code>.</strong> Only a record with that comment is Truthform's to change, with <code>--update</code>. A record written before the rename, with <code>stackdna:</code> in its comment, counts too.</li>
+          <li><strong>It reads the zone first and stops before writing anything</strong> when:
+            <ul>
+              <li>the zone is not in the target account;</li>
+              <li>a record it did not make is at a name it would write;</li>
+              <li>a record an earlier run made is there with other content, since DNS would then answer with both (delete it first);</li>
+              <li>the subdomain is delegated or is a zone of its own;</li>
+              <li>the snapshot has a CNAME beside other records at one name, which DNS does not allow.</li>
+            </ul>
+          </li>
+          <li><strong>Mail, delegations and ACME records stay out:</strong> MX, SPF, DKIM, DMARC, MTA-STS, TLS reporting, BIMI and mail clients' autodiscovery records, NS records, and <code>_acme-challenge</code>. So do records the source already has under the subdomain, and everything in the snapshot that is not a DNS record. The run lists each record it leaves out, with the reason.</li>
           <li><strong>It warns of a wildcard above the subdomain,</strong> such as <code>*.example.com</code>. Today that wildcard answers for <code>test.example.com</code> and every name below it. Once any of those names exists it no longer does, so a name there that the restore does not create stops resolving.</li>
-          <li><strong>It also warns of</strong> a CNAME moved onto a name it leaves out, which would answer with nothing, and of an SRV, HTTPS or SVCB record, whose target is copied as it is.</li>
+          <li><strong>It also warns of</strong> a CNAME that points at a name it leaves out, which would answer with nothing, and of an SRV, HTTPS or SVCB record, whose target is copied as it is.</li>
           <li><strong>Nothing is deleted.</strong> A record an earlier run made that the snapshot no longer has is reported and left in place.</li>
-          <li><strong>The subdomain name can be at most 90 characters,</strong> so the comment fits in the 100 that Cloudflare's free plan takes.</li>
+          <li><strong>The subdomain name can be at most 89 characters,</strong> so the comment fits in the 100 that Cloudflare's free plan takes.</li>
         </ul>
         <p>Afterwards, <code>truthform diff</code> with the same <code>--subdomain</code>, <code>--address</code> and <code>--target</code> compares the records under the subdomain with the snapshot as the restore put it.</p>
 
@@ -235,7 +243,7 @@ truthform graph --from snap/azure --subscription "$SUB" --tenant "$TENANT" --out
           <li>A Log Analytics workspace's data sources can only be listed one kind at a time. Truthform lists every kind Azure's definition names; a data source of a kind it does not name is not found.</li>
           <li>Proven against real systems so far: Kubernetes; AWS (capture of a whole region; restore of the 17 types the drill uses, an IAM role, a managed policy and a Lambda function among them; <code>--update</code> of resources drifted by hand; restore into another region); Azure; Google Cloud; GitHub and Cloudflare capture. GitHub and Cloudflare restore, and Google Compute, are proven against simulated APIs only.</li>
           <li>On Cloudflare, a <code>--subdomain</code> restore has not yet written to a real zone, and the browser sign-in has not been tried on Windows or macOS.</li>
-          <li>On Cloudflare, <code>--update</code> does not replace a record of Truthform's whose content changed: records are matched by content, so the restore stops and asks for the old one to be deleted first.</li>
+          <li>On Cloudflare, a record is matched by its type, name and content together, so one whose content changed is a different record and <code>--update</code> does not change the old one. A <code>--subdomain</code> restore stops and asks for the old one to be deleted first. A restore without <code>--subdomain</code> creates the new record beside the old.</li>
           <li>On AWS, restores into another account have not been run against real AWS yet, nor IAM beyond a role and a customer managed policy.</li>
           <li>On Azure, <code>--rename</code> is proven by the simulated drill, which restores a renamed snapshot and gets an empty diff, and by an offline run over a real snapshot of about 1,600 objects. A real restore into a second subscription has been run; its results are not published here yet.</li>
           <li>On Azure, a role assignment for a principal the snapshot does not hold (a person, a group, an application) keeps its object ID, so it fails with <code>PrincipalNotFound</code> in another tenant: Truthform does not map principals across tenants.</li>
