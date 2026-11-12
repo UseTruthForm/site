@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Permissions | Truthform docs</title>
-  <meta name="description" content="What to grant Truthform on AWS, Azure, Google Cloud, Kubernetes, GitHub and Cloudflare, for capture and for restore, and which grants have been verified.">
+  <title>Permissions | TruthForm docs</title>
+  <meta name="description" content="What to grant TruthForm on AWS, Azure, Google Cloud, Kubernetes, GitHub and Cloudflare, for capture and for restore, and which grants have been verified.">
   <link rel="canonical" href="https://usetruthform.com/docs/permissions/">
   <link rel="icon" href="/logo.svg" type="image/svg+xml">
   <meta name="color-scheme" content="light dark">
@@ -17,12 +17,12 @@
 
   <header class="site-header">
     <div class="wrap header-inner">
-      <a class="brand" href="/" aria-label="Truthform home">
+      <a class="brand" href="/" aria-label="TruthForm home">
         <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <g class="sb"><rect x="8" y="5" width="48" height="6" rx="1.2"/><rect x="28.6" y="27" width="6.8" height="3.6" rx=".8"/><path d="M30.5 53.2H33.5L32.4 57.2Q32 58 31.6 57.2Z"/><rect x="24" y="59.6" width="16" height="2" rx="1"/></g>
           <g class="sa"><rect x="31.1" y="11" width="1.8" height="16.5"/><path d="M27.5 31.8H36.5L39.8 35.6V39.4L33.6 52H30.4L24.2 39.4V35.6Z"/></g>
         </svg>
-        <span>Truthform</span>
+        <span><span class="brand-truth">Truth</span>Form</span>
       </a>
       <nav aria-label="Primary">
         <ul class="nav">
@@ -61,19 +61,19 @@
         <p>Then check what the grant can actually read, type by type, with a capture that is written nowhere. A type refused for want of permission is reported as <strong>denied</strong>, never as empty, and the check exits 3.</p>
 <pre class="codeblock" tabindex="0"><code>truthform check --platform aws --region us-east-1 --profile truthform-reader</code></pre>
 
-        <p>Each grant below says whether it has been <span class="badge badge-live">Verified</span>, meaning Truthform ran with exactly that access, or is <span class="badge badge-plan">Expected</span>, meaning it follows from the platform's documentation and the calls Truthform makes but has not yet been run with exactly that access.</p>
+        <p>Each grant below says whether it has been <span class="badge badge-live">Verified</span>, meaning TruthForm ran with exactly that access, or is <span class="badge badge-plan">Expected</span>, meaning it follows from the platform's documentation and the calls TruthForm makes but has not yet been run with exactly that access.</p>
 
         <p>Jump to: <a href="#aws">AWS</a> · <a href="#azure">Azure</a> · <a href="#gcp">Google Cloud</a> · <a href="#kubernetes">Kubernetes</a> · <a href="#github">GitHub</a> · <a href="#cloudflare">Cloudflare</a></p>
 
         <h2 id="aws">AWS</h2>
-        <p>Truthform reads and writes through Cloud Control, which calls each service on Truthform's behalf with the caller's own permissions. A role therefore needs Cloud Control's actions <strong>and</strong> the read (or write) actions of every service whose types are captured.</p>
+        <p>TruthForm reads and writes through Cloud Control, which calls each service on TruthForm's behalf with the caller's own permissions. A role therefore needs Cloud Control's actions <strong>and</strong> the read (or write) actions of every service whose types are captured.</p>
         <div class="table-wrap">
           <table class="table">
             <thead><tr><th scope="col">Use</th><th scope="col">Grant</th><th scope="col">Status</th></tr></thead>
             <tbody>
               <tr>
                 <td data-label="Use">Capture, diff</td>
-                <td data-label="Grant">The managed policy <code>ReadOnlyAccess</code>, <strong>plus Truthform's read add-on</strong>, which <code>truthform permissions</code> puts in the role. <code>ReadOnlyAccess</code> covers Cloud Control's reads, <code>sts:GetCallerIdentity</code>, <code>ec2:DescribeAvailabilityZones</code> and most services' <code>Describe*</code>, <code>Get*</code> and <code>List*</code>, but not every newer service's. The add-on is the reads the CloudFormation registry's handlers name that <code>ReadOnlyAccess</code> lacks: 527 actions in three customer managed policies. A schema naming an action is not enough to grant it, because some reads return secrets that <code>ReadOnlyAccess</code> leaves out on purpose (<code>ivs:GetStreamKey</code>, <code>glue:GetConnection</code>), so it keeps only reads of configuration: no secret values, no data, no writes. It is regenerated weekly from AWS's public sources, with no AWS credentials, and each change is reviewed before it ships. <code>ReadOnlyAccess</code> itself also reads data (S3 objects, DynamoDB items).</td>
+                <td data-label="Grant">The managed policy <code>ReadOnlyAccess</code>, <strong>plus TruthForm's read add-on</strong>, which <code>truthform permissions</code> puts in the role. <code>ReadOnlyAccess</code> covers Cloud Control's reads, <code>sts:GetCallerIdentity</code>, <code>ec2:DescribeAvailabilityZones</code> and most services' <code>Describe*</code>, <code>Get*</code> and <code>List*</code>, but not every newer service's. The add-on is the reads the CloudFormation registry's handlers name that <code>ReadOnlyAccess</code> lacks: 527 actions in three customer managed policies. A schema naming an action is not enough to grant it, because some reads return secrets that <code>ReadOnlyAccess</code> leaves out on purpose (<code>ivs:GetStreamKey</code>, <code>glue:GetConnection</code>), so it keeps only reads of configuration: no secret values, no data, no writes. It is regenerated weekly from AWS's public sources, with no AWS credentials, and each change is reviewed before it ships. <code>ReadOnlyAccess</code> itself also reads data (S3 objects, DynamoDB items).</td>
                 <td data-label="Status"><span class="badge badge-live">Verified</span><br>On 2026-10-24 the role <code>truthform permissions</code> builds captured a sandbox region with the same 97 resources as an identity holding <code>ReadOnlyAccess</code> and <code>PowerUserAccess</code>, and no sampled write was allowed. It was refused 2 of 1,161 types, both on purpose: a data-plane type and one holding credentials. The sandbox holds little, so that count is a floor: about 37 types need a refused action just to be listed (<code>AWS::Glue::Connection</code> among them), and an account using them sees them reported as refused, not empty. <code>ReadOnlyAccess</code> alone was refused 87 types. A trust from another account is not yet verified.</td>
               </tr>
               <tr>
@@ -98,7 +98,7 @@
             <tbody>
               <tr>
                 <td data-label="Use">Capture, diff</td>
-                <td data-label="Grant">The built-in <strong>Reader</strong> role at the subscription. It reads every resource, and the extension resources Truthform captures: role assignments and custom role definitions, locks, policy assignments and diagnostic settings.</td>
+                <td data-label="Grant">The built-in <strong>Reader</strong> role at the subscription. It reads every resource, and the extension resources TruthForm captures: role assignments and custom role definitions, locks, policy assignments and diagnostic settings.</td>
                 <td data-label="Status"><span class="badge badge-live">Verified</span><br>On 2026-10-23, a service principal holding only Reader captured a sandbox subscription to the same digest as its owner.</td>
               </tr>
               <tr>
@@ -162,7 +162,7 @@
         <p>Sign in through the browser with <code>truthform login cloudflare</code>. The full edition asks for <code>zone.read</code>, <code>dns.read</code> and <code>dns.write</code>; the capture-only edition asks for no write. Or set a token in <code>CLOUDFLARE_API_TOKEN</code>, which is used first: <strong>Zone: Read</strong> and <strong>DNS: Read</strong> for a capture, <strong>Zone: Edit</strong> and <strong>DNS: Edit</strong> for a restore, scoped to the account.</p>
         <p><span class="badge badge-live">Verified</span> for a capture: a real account was captured through the browser sign-in, with its read access. <span class="badge badge-plan">Expected</span> for a restore, which has not yet been run against a real Cloudflare account.</p>
 
-        <h2 id="what-it-does">What Truthform does with the access it is given</h2>
+        <h2 id="what-it-does">What TruthForm does with the access it is given</h2>
         <ul>
           <li><strong>Capture and diff never write.</strong> Every client that talks to a platform sits behind the read-only guard, which refuses any request that is not a read before it leaves the machine. It is an allow-list, so a request it does not recognise is refused, never let through. The capture-only edition also refuses to restore.</li>
           <li><strong>Secret values are named, not written.</strong> Values the platforms mask or never return (passwords, keys, a webhook's secret) are named in the snapshot and supplied at restore with <code>--values</code>, which is read and sent to the platform, never written. Kubernetes Secrets, and credentials left as plain values in an <code>env</code> list or a ConfigMap, are withheld the same way. A credential hidden in a command argument or in a config file is not recognised and is captured as configuration; see the <a href="/docs/getting-started/#capture">getting started</a> page.</li>
@@ -181,11 +181,11 @@
     <div class="wrap footer-inner">
       <p class="footer-brand">
         <img src="/logo.svg" alt="" width="20" height="20">
-        <span>Truthform</span>
+        <span><span class="brand-truth">Truth</span>Form</span>
       </p>
       <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
       <p>Not yet released. This site sets no cookies and runs no analytics.</p>
-      <p>&copy; 2026 Truthform</p>
+      <p>&copy; 2026 TruthForm</p>
     </div>
   </footer>
 </body>
