@@ -26,7 +26,14 @@ def flags(cmd):
     if cmd not in known:
         # login takes its provider first, then its flags: "login -h" prints
         # only a usage line, which reads here as a command with no flags.
-        argv = [exe, cmd, "cloudflare", "-h"] if cmd == "login" else [exe, cmd, "-h"]
+        # plan's flags belong to its subcommand ("plan rebuild"): "plan -h"
+        # alone lists none, so every flag of a plan line would read as unknown.
+        if cmd == "login":
+            argv = [exe, cmd, "cloudflare", "-h"]
+        elif cmd.startswith("plan "):
+            argv = [exe, *cmd.split(), "-h"]
+        else:
+            argv = [exe, cmd, "-h"]
         out = subprocess.run(argv, capture_output=True, text=True)
         known[cmd] = set(re.findall(r"^\s+-([\w-]+)", out.stdout + out.stderr, re.M)) | GLOBAL_FLAGS
     return known[cmd]
@@ -42,6 +49,9 @@ for page in sorted(glob.glob("public/**/*.html", recursive=True)):
             if not m:
                 continue
             cmd, rest = m.groups()
+            if cmd == "plan":
+                sub, _, rest = rest.strip().partition(" ")
+                cmd = f"plan {sub}"
             # Flags inside $(...) belong to another tool (az, gcloud), and
             # anything after a pipe to jq or grep.
             rest = re.sub(r"\$\([^)]*\)", "", rest.split("|")[0])
@@ -56,7 +66,8 @@ for page in sorted(glob.glob("public/**/*.html", recursive=True)):
 # Flags named in running text (<code>--zone-map ...</code>) are not tied to a
 # command, so each must exist on at least one. Without this, a renamed flag
 # that the page mentions only in prose passes unnoticed.
-ANY = ["capture", "diff", "restore", "check", "permissions", "compare", "schema-diff", "report", "graph", "login"]
+ANY = ["capture", "diff", "restore", "check", "permissions", "compare", "schema-diff", "report", "graph", "login",
+       "translate", "skills", "plan rebuild", "plan secrets", "plan scope"]
 everywhere = set().union(*(flags(c) for c in ANY))
 for page in sorted(glob.glob("public/**/*.html", recursive=True)):
     src = re.sub(r"<pre[^>]*>.*?</pre>", "", open(page, encoding="utf-8").read(), flags=re.S)

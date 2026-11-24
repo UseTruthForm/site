@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rebuild a cluster | TruthForm docs</title>
+  <meta name="description" content="Rebuild a Kubernetes cluster from a snapshot: the rebuild plan, where each Secret is read from, restoring a part with holds, and restoring into another environment.">
+  <link rel="canonical" href="https://usetruthform.com/docs/rebuild/">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c1014" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" aria-label="TruthForm home">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <g class="sb"><rect x="8" y="5" width="48" height="6" rx="1.2"/><rect x="28.6" y="27" width="6.8" height="3.6" rx=".8"/><path d="M30.5 53.2H33.5L32.4 57.2Q32 58 31.6 57.2Z"/><rect x="24" y="59.6" width="16" height="2" rx="1"/></g>
+          <g class="sa"><rect x="31.1" y="11" width="1.8" height="16.5"/><path d="M27.5 31.8H36.5L39.8 35.6V39.4L33.6 52H30.4L24.2 39.4V35.6Z"/></g>
+        </svg>
+        <span><span class="brand-truth">Truth</span>Form</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="nav">
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/#another-cloud">Another cloud</a></li>
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#roadmap">Roadmap</a></li>
+          <li class="nav-keep"><a href="/docs/" aria-current="true">Docs</a></li>
+          <li><a class="nav-cta" href="/#follow">Follow along</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="docs">
+    <div class="wrap docs-grid">
+      <nav class="docs-nav" aria-label="Documentation">
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs/">Overview</a></li>
+            <li><a href="/docs/getting-started/">Getting started</a></li>
+            <li><a href="/docs/rebuild/" aria-current="page">Rebuild a cluster</a></li>
+            <li><a href="/docs/another-cloud/">Another cloud</a></li>
+            <li><a href="/docs/permissions/">Permissions</a></li>
+            <li><a href="/docs/agents/">Agents (MCP)</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <article class="prose">
+        <h1>Rebuild a cluster</h1>
+        <p class="lede">A snapshot recreates what it holds. A Kubernetes cluster rebuilt from one also needs what it does not hold: the tools that install the rest, the Secrets' values, the names that point at it. These commands say what that is, read it from where it lives, and refuse a restore that would quietly do the wrong thing.</p>
+
+        <h2 id="plan">The rebuild plan</h2>
+<pre class="codeblock" tabindex="0"><code>truthform plan rebuild --from snap/cluster                 # Markdown, to stdout
+truthform plan rebuild --from snap/cluster --out PLAN.md
+truthform plan rebuild --from snap/cluster --json | jq '.plan.secretsByHand[].name'</code></pre>
+        <p>It reads the snapshot and nothing else: no login, no request, and the capture-only edition has it. The same snapshot gives the same plan, so it can be kept beside the snapshot and compared like one. In the order to act on it:</p>
+        <ol>
+          <li><strong>Install first:</strong> what the capture left to a GitOps source (a Flux HelmRelease or Kustomization, an Argo CD application, a Crossplane composite), with how many objects each makes.</li>
+          <li><strong>APIs to have served:</strong> types the snapshot has objects of and no CustomResourceDefinition for. The restore refuses those objects until something serves the type.</li>
+          <li><strong>Secrets to supply by hand:</strong> the ones no store in the snapshot supplies, with their keys and what names them. What the cluster makes again by itself, such as cert-manager's certificates, is named apart. Secrets kept encrypted are named with the key that opens them, the one thing only a copy outside the cluster brings back.</li>
+          <li><strong>Secrets a store supplies:</strong> the items read by the 1Password operator, External Secrets, the Vault Secrets Operator, the Secrets Store CSI driver and akv2k8s.</li>
+          <li><strong>Restore.</strong></li>
+          <li><strong>Names to point at the rebuilt cluster:</strong> the hosts in Ingress rules, Gateway routes and Traefik matches.</li>
+        </ol>
+        <p>A snapshot whose capture could not read everything gives a plan that says so first and lists what was not read: a step that lists nothing is then no proof there is nothing.</p>
+
+        <h2 id="secrets">Where the secrets are read from</h2>
+        <p>A secret sources file says where each Secret's copy is, so a rebuild reads the values itself. It holds references and never a value, so it can be kept in a repository beside the pipeline that uses it.</p>
+<pre class="codeblock" tabindex="0"><code># a file to fill in, then: does every Secret have a source, and does each answer?
+truthform plan secrets --from snap/cluster --out secrets.yaml
+truthform plan secrets --from snap/cluster --check secrets.yaml
+truthform plan secrets --from snap/cluster --check secrets.yaml --resolve
+truthform restore --context new --from snap/cluster --secrets-from secrets.yaml</code></pre>
+<pre class="codeblock" tabindex="0"><code>secrets:
+  - secret: flux-system/flux-system
+    from:
+      username: env:GIT_USER
+      password: op://Break Glass/flux git/password
+  - secret: tools/licence
+    leave: the vendor's operator makes it when it starts</code></pre>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Reference</th><th scope="col">Read from</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Reference"><code>op://&lt;vault&gt;/&lt;item&gt;/&lt;field&gt;</code></td><td data-label="Read from">1Password, with the <code>op</code> CLI</td></tr>
+              <tr><td data-label="Reference"><code>azurekv://&lt;vault&gt;/&lt;secret&gt;</code></td><td data-label="Read from">Azure Key Vault, with the <code>az</code> CLI</td></tr>
+              <tr><td data-label="Reference"><code>env:&lt;NAME&gt;</code></td><td data-label="Read from">An environment variable</td></tr>
+              <tr><td data-label="Reference"><code>file:&lt;path&gt;</code></td><td data-label="Read from">A file's whole content, byte for byte</td></tr>
+              <tr><td data-label="Reference"><code>exec:&lt;command&gt;</code></td><td data-label="Read from">What a command prints; only with <code>--allow-exec</code></td></tr>
+              <tr><td data-label="Reference"><code>empty:</code></td><td data-label="Read from">The empty value, for a key meant to hold nothing</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><strong>A read that gives nothing is refused,</strong> so a sign-in that lapsed does not restore an empty password. A key that is meant to be empty says so with <code>empty:</code>.</p>
+
+        <h2 id="scope">A part of the snapshot</h2>
+        <p>A drill wants the platform, the core of an application and a few of its workloads, not everything. A scope file says which, in terms the cluster already has:</p>
+<pre class="codeblock" tabindex="0"><code>truthform plan scope --from snap/cluster --out scope.yaml     # brings everything; never written over one
+truthform plan scope --from snap/cluster --check scope.yaml   # what it brings, and what it leaves out
+truthform restore --context test --from snap/cluster --scope scope.yaml
+truthform diff    --context test --from snap/cluster --scope scope.yaml</code></pre>
+<pre class="codeblock" tabindex="0"><code>narrow:
+  - namespaces: ["team-*"]          # names, or patterns as a shell has them
+    releases: [a-search, b-search]  # Helm releases, in any of those namespaces
+    objects: [ConfigMap/shared]     # what no release made, as Kind/name
+  - namespaces: [batch]
+    labels: {tier: drill}
+    hold: true                      # restored, not running</code></pre>
+        <p>A scope narrows the namespaces it names and leaves the rest of the snapshot as it is, so a namespace added later that a pattern fits is left out until someone chooses from it. A release comes whole, wherever what it made is. <code>hold: true</code> brings what an entry chooses with nothing running: workloads at zero, sources suspended.</p>
+        <p><strong>A restore is refused, with nothing written,</strong> when:</p>
+        <ul>
+          <li><strong>A GitOps source brought beside a hold would start what is held.</strong> A scope cannot stop a source that is brought from making what it makes. Hold the source too, leave it out, or accept it by name under <code>sourcesRunning</code>.</li>
+          <li><strong>An admission webhook that fails closed would call a Service that will not answer.</strong> Webhooks are applied last, so the first restore would go through; from then on the API server refuses every write the webhook is asked about. This is asked of every Kubernetes restore, with a scope or without one.</li>
+        </ul>
+
+        <h2 id="environment">Into another environment</h2>
+        <p>A snapshot restored beside its source, for a drill or to build one environment as another, needs two things changed and nothing else.</p>
+<pre class="codeblock" tabindex="0"><code>truthform restore --context test --from snap/cluster \
+  --leave-out leave.yaml --rename stores.yaml --secrets-from secrets.yaml
+truthform diff    --context test --from snap/cluster --leave-out leave.yaml --rename stores.yaml</code></pre>
+        <ul>
+          <li><strong><code>--leave-out</code></strong> lists objects the restore does not write and the diff does not expect, as <code>Kind/namespace/name</code> with <code>*</code> for any part. The first to leave out is where GitOps starts: restored as it is, the new cluster would sync the source's path.</li>
+          <li><strong><code>--rename</code></strong> says where Secrets are read from instead: the start of a store reference, and what replaces it. Only fields that name a store or an item in it change, across 1Password, External Secrets, the Vault Secrets Operator, the Secrets Store CSI driver and akv2k8s. <strong>A restore is refused while any store reference is left unnamed or out of reach,</strong> because what reads through it would use the source's store: the copy would quietly read production's secrets.</li>
+        </ul>
+
+        <h2 id="limits">What it cannot see</h2>
+        <ul>
+          <li>Who uses a Secret, when the user is something step 1 installs, or an object with no namespace that names the Secret without one.</li>
+          <li>Which namespaces a <code>ClusterExternalSecret</code> reaches; its Secrets are listed as <code>*/name</code>.</li>
+          <li>A secret store of a kind the plan does not know: its Secrets are listed as by hand.</li>
+          <li>Hosts matched by pattern, such as Traefik's <code>HostRegexp</code>.</li>
+          <li>Data: databases, volumes and queues are outside a snapshot.</li>
+        </ul>
+
+        <nav class="doc-next" aria-label="Next and previous">
+          <a href="/docs/getting-started/">&larr; Getting started</a>
+          <a href="/docs/another-cloud/">Another cloud &rarr;</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-brand">
+        <img src="/logo.svg" alt="" width="20" height="20">
+        <span><span class="brand-truth">Truth</span>Form</span>
+      </p>
+      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
+      <p>Not yet released. This site sets no cookies and runs no analytics.</p>
+      <p>&copy; 2026 TruthForm</p>
+    </div>
+  </footer>
+</body>
+</html>

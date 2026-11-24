@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>To another cloud | TruthForm docs</title>
+  <meta name="description" content="Translate an Azure snapshot to AWS or Google Cloud, offline: the map, what each service becomes, the evidence for an audit, the dry run, and what is left to people.">
+  <link rel="canonical" href="https://usetruthform.com/docs/another-cloud/">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0c1014" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="/" aria-label="TruthForm home">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <g class="sb"><rect x="8" y="5" width="48" height="6" rx="1.2"/><rect x="28.6" y="27" width="6.8" height="3.6" rx=".8"/><path d="M30.5 53.2H33.5L32.4 57.2Q32 58 31.6 57.2Z"/><rect x="24" y="59.6" width="16" height="2" rx="1"/></g>
+          <g class="sa"><rect x="31.1" y="11" width="1.8" height="16.5"/><path d="M27.5 31.8H36.5L39.8 35.6V39.4L33.6 52H30.4L24.2 39.4V35.6Z"/></g>
+        </svg>
+        <span><span class="brand-truth">Truth</span>Form</span>
+      </a>
+      <nav aria-label="Primary">
+        <ul class="nav">
+          <li><a href="/#how">How it works</a></li>
+          <li><a href="/#another-cloud">Another cloud</a></li>
+          <li><a href="/#features">Features</a></li>
+          <li><a href="/#roadmap">Roadmap</a></li>
+          <li class="nav-keep"><a href="/docs/" aria-current="true">Docs</a></li>
+          <li><a class="nav-cta" href="/#follow">Follow along</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="docs">
+    <div class="wrap docs-grid">
+      <nav class="docs-nav" aria-label="Documentation">
+        <div>
+          <h2>Docs</h2>
+          <ul>
+            <li><a href="/docs/">Overview</a></li>
+            <li><a href="/docs/getting-started/">Getting started</a></li>
+            <li><a href="/docs/rebuild/">Rebuild a cluster</a></li>
+            <li><a href="/docs/another-cloud/" aria-current="page">Another cloud</a></li>
+            <li><a href="/docs/permissions/">Permissions</a></li>
+            <li><a href="/docs/agents/">Agents (MCP)</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <article class="prose">
+        <h1>To another cloud (Azure to AWS or Google Cloud)</h1>
+        <p class="lede"><code>truthform translate</code> rewrites an Azure snapshot as a snapshot for AWS or Google Cloud. It reads one snapshot and a map, writes a snapshot per target, and makes no request, so the capture-only edition has it too. <code>plan</code>, <code>restore</code> and <code>diff</code> take what it writes as they take any snapshot.</p>
+
+        <div class="note">
+          <p><strong>Where it stands.</strong> Translations are restored into simulated AWS and Google Cloud APIs, and the dry run has been run read-only against a test AWS account and a test Google Cloud project. No translation has yet been restored into a real AWS or Google Cloud account. Azure is the only source.</p>
+        </div>
+
+<pre class="codeblock" tabindex="0"><code>truthform translate --from snap/azure --map map.yaml --out moved/
+truthform restore --platform aws --region eu-west-1 --from moved/aws --dry-run
+truthform restore --platform aws --region eu-west-1 --from moved/aws</code></pre>
+
+        <h2 id="outcomes">Every object has an outcome</h2>
+        <p>The translation writes <code>translation.yaml</code> beside the snapshots it makes, with an entry for every Azure object:</p>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">State</th><th scope="col">Meaning</th></tr></thead>
+            <tbody>
+              <tr><td data-label="State"><strong>mapped</strong></td><td data-label="Meaning">Written for the target, with nothing lost.</td></tr>
+              <tr><td data-label="State"><strong>mapped with losses</strong></td><td data-label="Meaning">Written, and each setting that could not be carried is named, including anything that leaves the target less protected than the source.</td></tr>
+              <tr><td data-label="State"><strong>refused</strong></td><td data-label="Meaning">Not written, with the reason: a choice the map did not make, something with no faithful equivalent, or identity that is the customer's directory.</td></tr>
+              <tr><td data-label="State"><strong>not looked at</strong></td><td data-label="Meaning">A type the translation does not cover yet. It is listed, never silently dropped.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The run exits 3 when anything is refused, not looked at, less protected than the source, or has a setting no rule reads. A partial translation never looks like a finished one.</p>
+
+        <h2 id="map">The map</h2>
+        <p>The mapping itself is fixed. The map is the only input per environment: which destination each service class goes to, the region, and what Azure cannot say, such as an instance type for a node pool or a database. <strong>Nothing the map leaves out gets a default:</strong> a choice it has to make and does not is refused, naming the key. An abridged map for AWS:</p>
+<pre class="codeblock" tabindex="0"><code>to: aws                     # or gcp
+region: eu-west-1
+destinations:
+  messaging: sqs-sns        # sqs-sns (aws), pubsub (gcp), or rabbitmq (in the cluster)
+  network: vpc
+  secrets: secret-manager   # Secrets Manager (aws) or Secret Manager (gcp)
+  registry: ecr             # ecr (aws) or artifact-registry (gcp)
+  storage: buckets          # a bucket per blob container
+  dns: route53              # route53 (aws) or cloud-dns (gcp)
+  databases: rds            # rds (aws) or cloud-sql (gcp)
+  clusters: eks             # eks (aws) or gke (gcp)
+  identity: workload        # the clusters' workload identities and their data roles
+network:
+  zone: eu-west-1a          # an Azure subnet spans the region's zones; an AWS one is in one
+  defaultOutbound: nat      # Azure's default outbound access as a NAT (billed); without it, no egress
+clusters:
+  rg/shop:
+    roleArn: arn:aws:iam::111111111111:role/eks-shop
+    nodeRoleArn: arn:aws:iam::111111111111:role/eks-nodes
+    pools:
+      system:
+        instanceType: m7i.xlarge    # VM sizes are not translated
+databases:
+  data/shop-pg:
+    instanceClass: db.m6g.large     # no SKU translation, and no default</code></pre>
+
+        <h2 id="what">What each service becomes</h2>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Azure</th><th scope="col">AWS</th><th scope="col">Google Cloud</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Azure">Service Bus queue, topic, subscription</td><td data-label="AWS">SQS queue with a dead-letter queue; SNS topic; an SQS queue subscribed with raw delivery. Or RabbitMQ in the cluster</td><td data-label="Google Cloud">Pub/Sub topic and subscription, with a dead-letter topic. Or RabbitMQ in the cluster</td></tr>
+              <tr><td data-label="Azure">Subscription rules</td><td data-label="AWS">Correlation rules and SQL filters that compare text for equality, or test that a property exists, become filter policies; any other SQL is refused, with what was met</td><td data-label="Google Cloud">The same, as subscription filters</td></tr>
+              <tr><td data-label="Azure">Virtual network, subnets, routing</td><td data-label="AWS">VPC (a range wider than /16 as several blocks), subnets in the map's zones, NAT gateways, route tables, peering connections</td><td data-label="Google Cloud">Custom-mode VPC network, subnetworks, Cloud NAT, peerings, egress firewall rules where Azure dropped traffic</td></tr>
+              <tr><td data-label="Azure">Network and application security groups</td><td data-label="AWS">Security groups holding what the rules allow, every earlier deny taken out (see below)</td><td data-label="Google Cloud">Firewall rules of the same priority, applied by network tag</td></tr>
+              <tr><td data-label="Azure">Flow logs</td><td data-label="AWS">VPC flow logs to the map's S3 bucket</td><td data-label="Google Cloud">VPC Flow Logs on the subnetworks</td></tr>
+              <tr><td data-label="Azure">Blob container</td><td data-label="AWS">S3 bucket, public access blocked, with versioning, Object Lock and TLS rules where the account had them</td><td data-label="Google Cloud">Cloud Storage bucket, uniform access, public access prevented</td></tr>
+              <tr><td data-label="Azure">Key Vault secrets, container registry, DNS zones</td><td data-label="AWS">Secrets Manager, ECR, Route 53</td><td data-label="Google Cloud">Secret Manager, Artifact Registry, Cloud DNS</td></tr>
+              <tr><td data-label="Azure">PostgreSQL flexible server, Azure SQL server</td><td data-label="AWS">RDS instance, subnet group and security group: configuration only</td><td data-label="Google Cloud">Cloud SQL instance: configuration only</td></tr>
+              <tr><td data-label="Azure">AKS cluster</td><td data-label="AWS">EKS cluster and managed node groups</td><td data-label="Google Cloud">Regional GKE cluster with its node pools</td></tr>
+              <tr><td data-label="Azure">Managed identities of the clusters' service accounts</td><td data-label="AWS">IAM roles for EKS Pod Identity</td><td data-label="Google Cloud">Service accounts for GKE workload identity</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Each object is built through AWS's CloudFormation registry or checked against Google's Discovery documents, so what is written is what the target's own definition accepts. Blobs, rows, secret values and images are never copied: buckets, databases, secrets and registries are written empty, and the report says so. Virtual machines are not translated.</p>
+
+        <h2 id="network">Never more open than the source</h2>
+        <p>Azure evaluates a network security group by priority, the first match deciding. An AWS security group only allows, and adds up with the others on an interface. So each allow is written with every deny before it taken out, as address ranges, ports and protocols. An NSG on a subnet and another on an interface in it are written once, as what both allow, never side by side. What cannot be written exactly, such as a rule that names a service tag, is narrowed or dropped, and named. <strong>A translation may let through less than the source, never more.</strong></p>
+
+        <h3 id="evidence">Evidence for an audit</h3>
+        <p>Each NSG's entry in <code>translation.yaml</code> has an <code>evidence</code> row for every rule, Azure's six defaults included, in every place the NSG is written:</p>
+<pre class="codeblock" tabindex="0"><code>- source: Microsoft.Network/networkSecurityGroups sec/app-nsg
+  state: mapped with losses
+  evidence:
+  - where: AWS::EC2::SecurityGroup app-nsg
+    rule: deny-ssh
+    priority: 200
+    direction: inbound
+    access: deny
+    status: exact
+    enforcedBy:
+    - 'AWS::EC2::SecurityGroup app-nsg: security groups only allow, and no rule of it allows what this denies'</code></pre>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Status</th><th scope="col">Meaning</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Status"><code>exact</code></td><td data-label="Meaning">The target lets through, and keeps out, what the rule did. <code>enforcedBy</code> names the target rules.</td></tr>
+              <tr><td data-label="Status"><code>stricter</code></td><td data-label="Meaning">The target lets through less; <code>why</code> says what, and for which reason.</td></tr>
+              <tr><td data-label="Status"><code>not carried</code></td><td data-label="Meaning">An allow that is not written, so nothing it allowed gets through. Never a deny: a deny that cannot be written exactly is widened, and one that cannot be read refuses the NSG.</td></tr>
+              <tr><td data-label="Status"><code>does not apply</code></td><td data-label="Meaning">The rule names addresses or a group not in this place, so Azure did not apply it there either.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The rows come in a fixed order, so two runs compare line by line. The claim behind them, that the target never lets through what Azure denied, is tested by putting the same packets to Azure's rules and to each target's rules as that cloud evaluates them.</p>
+
+        <h2 id="identity">Workload identity</h2>
+        <p>With <code>identity: workload</code>, an app that reached a queue, a blob, a secret or an image through its pod's managed identity reaches the translated one, and nothing else. A grant is written only when it is no more than the source's; in doubt, the role assignment is refused and says why.</p>
+        <ul>
+          <li><strong>What is translated:</strong> a user-assigned identity federated to a translated cluster's service account, as an IAM role trusted by EKS Pod Identity for that service account only, or a Google service account bound to it. Its data roles (Service Bus sender and receiver, Storage Blob reader and contributor, Key Vault secrets user, AcrPull and similar) come from a fixed table of each role's published actions.</li>
+          <li><strong>Narrowed:</strong> a grant on a namespace, an account, a vault, a resource group or the subscription becomes a grant on each translated object in it, by name, and the narrowing is named.</li>
+          <li><strong>Refused:</strong> Owner, Contributor and other control-plane roles, custom roles, conditions, and any grant to a person, a group or a pipeline. People and pipelines are the customer's directory, not the translation's.</li>
+        </ul>
+
+        <h2 id="gitops">Your Git repository</h2>
+        <p>Translate does not rewrite a Kubernetes manifest. Restoring the cluster's snapshot on the target brings GitOps back and it rebuilds the rest, but the manifests in Git still name Azure things. Given the cluster's snapshot, a checkout of the repository, or both, translate lists every place that does, by file and line, with what it becomes:</p>
+<pre class="codeblock" tabindex="0"><code>truthform translate --from snap/azure --map map.yaml --out moved/ \
+  --kube snap/kubernetes --gitops ~/src/fleet</code></pre>
+        <p>An image in an Azure registry gets its ECR or Artifact Registry address; a KEDA trigger on a Service Bus queue gets the SQS or Pub/Sub trigger that replaces it. Something that names an Azure thing the translation does not hold is listed apart, because applied as it is it would still point at Azure.</p>
+
+        <h2 id="dry-run">The dry run</h2>
+        <p>Before a translation is restored, <code>restore --dry-run</code> on AWS or Google Cloud reads the target and lists each write the restore would make, with what is already there and what differs, and makes none. It also reads for what would refuse a write: a bucket name someone else holds, a role or service account a resource names that does not exist, and on Google Cloud an API not enabled, with the command to enable it. What it could not check is printed as <code>NOT CHECKED</code>, never passed over. It cannot say whether the cloud would accept each request: quotas and refused values show only in a real restore.</p>
+
+        <h2 id="skills">Skills for what is left to people</h2>
+        <p>A translation names what it does not do. For the larger parts of that, TruthForm carries skills: instructions an AI agent loads to help a person finish the work. Each reads its work list from <code>translation.yaml</code>, has the agent propose and check, and leaves every write or grant to the person.</p>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th scope="col">Skill</th><th scope="col">For</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Skill"><code>translate-move-data</code></td><td data-label="For">Blobs, images, secret values, databases and volumes, checked by counts, bytes and digests on both sides.</td></tr>
+              <tr><td data-label="Skill"><code>translate-grant-access</code></td><td data-label="For">The refused role assignments: people, groups, pipelines, control-plane and custom roles.</td></tr>
+              <tr><td data-label="Skill"><code>translate-rebuild-machines</code></td><td data-label="For">VMs, scale sets and firewall appliances, and the security groups or tags each must carry.</td></tr>
+              <tr><td data-label="Skill"><code>translate-sql-tls</code></td><td data-label="For">A SQL Server minimum TLS version the target cannot match.</td></tr>
+              <tr><td data-label="Skill"><code>translate-flow-logs</code></td><td data-label="For">Parsers and detections written for Azure's flow log records.</td></tr>
+              <tr><td data-label="Skill"><code>translate-estimate-cost</code></td><td data-label="For">What the translation would cost on the target beside the source's bill, every row with a source for its quantity and its price.</td></tr>
+            </tbody>
+          </table>
+        </div>
+<pre class="codeblock" tabindex="0"><code>truthform skills                       # list them
+truthform skills translate-move-data   # print one
+truthform skills --out .claude/skills  # write the folders where an agent loads them</code></pre>
+        <p>Over MCP the same text comes from <code>list_skills</code> and <code>skill</code>. A skill cannot make a result true: each ends with what its checks do not show, such as whether a secret's value is the right one, for the person to own.</p>
+
+        <h2 id="limits">Known limits</h2>
+        <ul>
+          <li>No translation has been restored into a real AWS or Google Cloud account yet; restores are proven against simulated APIs.</li>
+          <li>Azure is the only source. Types outside the list above, and settings such as a storage account's lifecycle rules and replication, are reported as not looked at.</li>
+          <li>Data is never copied, and virtual machines, a cluster's own identity, add-ons and monitoring are not translated.</li>
+          <li>A Service Bus SQL filter matched property names whatever their case; no target does, so the report lists each name as the filter wrote it, and senders must set it so.</li>
+          <li>Where the target cannot set a database's oldest TLS version, the loss fails the run until the map accepts it, after the target's floor has been checked.</li>
+        </ul>
+
+        <nav class="doc-next" aria-label="Next and previous">
+          <a href="/docs/rebuild/">&larr; Rebuild a cluster</a>
+          <a href="/docs/permissions/">Permissions &rarr;</a>
+        </nav>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p class="footer-brand">
+        <img src="/logo.svg" alt="" width="20" height="20">
+        <span><span class="brand-truth">Truth</span>Form</span>
+      </p>
+      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
+      <p>Not yet released. This site sets no cookies and runs no analytics.</p>
+      <p>&copy; 2026 TruthForm</p>
+    </div>
+  </footer>
+</body>
+</html>

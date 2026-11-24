@@ -27,6 +27,7 @@
       <nav aria-label="Primary">
         <ul class="nav">
           <li><a href="/#how">How it works</a></li>
+          <li><a href="/#another-cloud">Another cloud</a></li>
           <li><a href="/#features">Features</a></li>
           <li><a href="/#roadmap">Roadmap</a></li>
           <li class="nav-keep"><a href="/docs/" aria-current="true">Docs</a></li>
@@ -44,6 +45,8 @@
           <ul>
             <li><a href="/docs/">Overview</a></li>
             <li><a href="/docs/getting-started/" aria-current="page">Getting started</a></li>
+            <li><a href="/docs/rebuild/">Rebuild a cluster</a></li>
+            <li><a href="/docs/another-cloud/">Another cloud</a></li>
             <li><a href="/docs/permissions/">Permissions</a></li>
             <li><a href="/docs/agents/">Agents (MCP)</a></li>
           </ul>
@@ -160,11 +163,11 @@ truthform restore --context staging --from snap/k8s --secrets-from-context prod<
           <li><strong><code>--update</code></strong> also brings differing resources in line with the snapshot. It never replaces one: a change the platform can only make by deleting and re-creating (an AWS create-only property) is refused and named. Kubernetes restores always apply, with server-side apply.</li>
           <li><strong>References are remapped.</strong> The snapshot holds references, not the source's IDs: a subnet's VPC, a role's ARN or a principal ID resolves to what the target created.</li>
           <li><strong>In stages, on Azure:</strong> <code>--types 'Microsoft.Network/*'</code> restores those types and their children. Resource groups always come, a pattern that matches nothing is refused, and what a selected resource needs must already be there. A lock waits for a run that covers everything, since it would refuse what comes after it.</li>
-          <li><strong>Secrets.</strong> On AWS, Azure, GitHub and Cloudflare, <code>--values</code> takes a YAML file of the values the platform never returns, keyed by resource. It is read and sent to the platform, never written, and the restore names every secret it was not given. The same file can set any other property, such as a VM size the target cannot have; a list it sets is replaced whole. On Azure a key that matches nothing in the snapshot is refused, and <a href="#diff">diff</a> takes the same file. On Kubernetes, <code>--secrets-from-context</code> reads the values live from a source cluster and sends them straight to the target; a secret with no values is refused.</li>
+          <li><strong>Secrets.</strong> On AWS, Azure, GitHub and Cloudflare, <code>--values</code> takes a YAML file of the values the platform never returns, keyed by resource. It is read and sent to the platform, never written, and the restore names every secret it was not given. The same file can set any other property, such as a VM size the target cannot have; a list it sets is replaced whole. On Azure a key that matches nothing in the snapshot is refused, and <a href="#diff">diff</a> takes the same file. On Kubernetes, <code>--secrets-from-context</code> reads the values live from a source cluster and sends them straight to the target; a secret with no values is refused. <code>--secrets-from</code> reads them instead from where they are kept, such as 1Password or Azure Key Vault: see <a href="/docs/rebuild/#secrets">Rebuild a cluster</a>.</li>
           <li><strong>Into another AWS region:</strong> restore from the snapshot with a different <code>--region</code>. Zones are paired by zone ID and the pairing is printed; <code>--zone-map use2-az1=use1-az4</code> overrides a pair.</li>
           <li><strong>Into another Azure subscription while the source exists:</strong> storage accounts, key vaults, container registries, SQL servers and Service Bus namespaces have names unique across Azure, so the restore would fail on them. <code>--rename names.yaml</code> gives them new names, one <code>Type/name: newname</code> per line, such as <code>Microsoft.Storage/storageAccounts/shopassets01: shopassets02</code>. Their children, the role assignments, locks and diagnostic settings on them, and every reference to them follow. Text that only mentions an old name, such as a host name in an app setting, is left as it is and listed on standard error so you can check it. Write <code>--values</code> with the snapshot's names, and give <code>diff</code> the same file. An entry that names nothing in the snapshot, a resource group, or two resources given one name is refused, and other platforms refuse <code>--rename</code>.</li>
           <li><strong>In parallel:</strong> on AWS, Azure and Google Cloud, resources that do not depend on each other are created together, 8 at a time by default (<code>--parallel</code>).</li>
-          <li><strong>See it first (GitHub, Cloudflare):</strong> <code>--dry-run</code> reads the target and prints each write the restore would make, as <code>would create</code> or <code>would update</code>, and makes none. Its client refuses every write, so nothing changes even if the run goes wrong. Other platforms refuse <code>--dry-run</code>; there, a <code>diff</code> of the target from the snapshot shows what is missing.</li>
+          <li><strong>See it first (AWS, Google Cloud, GitHub, Cloudflare):</strong> <code>--dry-run</code> reads the target and prints each write the restore would make, as <code>would create</code> or <code>would update</code> (and on Google Cloud <code>would add</code> for a grant), and makes none. Its client refuses every write, so nothing changes even if the run goes wrong. On AWS and Google Cloud it also shows what is already there, what differs and what a reference cannot find, and reads for what would refuse a write that the inventory does not show: a bucket name another account or project holds, a role or service account a resource names that does not exist, and on Google Cloud an API not enabled, with the command to enable it. What it could not check is printed as <code>NOT CHECKED</code>. It cannot say whether the cloud would accept each request, since neither cloud can be asked without making it: quotas and refused values show only in a real restore. Kubernetes and Azure refuse <code>--dry-run</code>; there, a <code>diff</code> of the target from the snapshot shows what is missing.</li>
         </ul>
 
         <h3 id="subdomain">A second environment's DNS in the same zone (Cloudflare)</h3>
@@ -255,7 +258,7 @@ truthform graph --from snap/azure --subscription "$SUB" --tenant "$TENANT" --out
 
         <nav class="doc-next" aria-label="Next and previous">
           <a href="/docs/">&larr; Overview</a>
-          <a href="/docs/permissions/">Permissions &rarr;</a>
+          <a href="/docs/rebuild/">Rebuild a cluster &rarr;</a>
         </nav>
       </article>
     </div>

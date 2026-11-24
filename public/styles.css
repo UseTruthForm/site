@@ -459,6 +459,9 @@ figcaption code { background: rgb(255 255 255 / 10%); color: var(--code-text); }
   gap: 16px;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
 }
+/* The translation section puts its cards straight after a terminal, which
+   has no margin of its own; without this they touch. */
+.terminal + .features { margin-top: 32px; }
 .feature {
   padding: 22px;
   background: var(--surface);
