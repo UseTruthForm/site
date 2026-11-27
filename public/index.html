@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TruthForm: capture what you run, deploy what you captured</title>
-  <meta name="description" content="TruthForm is reverse infrastructure-as-code. It reads your live systems through each platform's own APIs and writes a normalised snapshot you can diff and redeploy. Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare; early development.">
+  <meta name="description" content="TruthForm is reverse infrastructure-as-code. It reads your live systems through each platform's own APIs and writes a normalised snapshot you can diff and redeploy, or translate offline from Azure to AWS or Google Cloud. Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare; early development.">
   <link rel="canonical" href="https://usetruthform.com/">
   <!-- Root-absolute paths throughout, so every page resolves the same
        files whatever its depth (the docs live under /docs/). -->
@@ -15,7 +15,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://usetruthform.com/">
   <meta property="og:title" content="TruthForm: capture what you run, deploy what you captured">
-  <meta property="og:description" content="Reverse infrastructure-as-code. Read the live system, write a redeployable snapshot. No state file.">
+  <meta property="og:description" content="Reverse infrastructure-as-code. Read the live system, write a redeployable snapshot, and translate it from Azure to AWS or Google Cloud. No state file.">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -27,14 +27,34 @@
         <!-- Inline rather than <img src="logo.svg"> so the mark follows the
              page's colour tokens, including dark mode. -->
         <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-          <g class="sb"><rect x="8" y="5" width="48" height="6" rx="1.2"/><rect x="28.6" y="27" width="6.8" height="3.6" rx=".8"/><path d="M30.5 53.2H33.5L32.4 57.2Q32 58 31.6 57.2Z"/><rect x="24" y="59.6" width="16" height="2" rx="1"/></g>
-          <g class="sa"><rect x="31.1" y="11" width="1.8" height="16.5"/><path d="M27.5 31.8H36.5L39.8 35.6V39.4L33.6 52H30.4L24.2 39.4V35.6Z"/></g>
+          <g transform="translate(32 32) scale(0.88) translate(-32 -33.5)">
+          <path class="cb-l" d="M33 44l-3 5 1 5M38 45l-1 5 2 4M43 45l2 5 0 4" stroke="#fb8f7d" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M28 36c5-5 15-5 19 0 2 4 0 9-6 10H31Z" fill="#fb8f7d"/>
+          <path d="M40 34V24M46 34V25" stroke="#fb8f7d" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M44 40c0-5 4-8 9-8 3 0 5 1 6 3l-5.5 3 5.5 2.5c-1 3-4 4.5-7 4.5-5 0-8-2-8-5Z" fill="#fb8f7d"/>
+          <path d="M53.5 38l5.5-3" stroke="#d4604f" stroke-width="1.2" stroke-linecap="round"/>
+          <g class="cs" fill="#5eead4"><circle cx="9" cy="13" r="3.2"/><circle cx="13" cy="18.5" r="5.6"/><circle cx="18.5" cy="26" r="9"/><circle cx="25" cy="36" r="13.5"/></g>
+          <path class="cw" d="M6.6 15.5q3 1.2 5.2-.6M8 22q5 2.4 9.6-1M10 30q8 4 16-1.5" fill="none" stroke="#0f766e" stroke-width="1.8" stroke-linecap="round" stroke-opacity=".7"/>
+          <path d="M16 31q2-6 8-8" stroke="#ccfbf1" stroke-width="2" stroke-linecap="round" fill="none" opacity=".7"/>
+          <ellipse cx="36" cy="41" rx="3.2" ry="6.5" fill="#0f766e" transform="rotate(-20 36 41)"/>
+          <path d="M30 39c3-3 10-3 13 1 1 3-1 6-5 6h-7Z" fill="#fb8f7d"/>
+          <g class="ce" fill="#fff" stroke="#fb8f7d" stroke-width=".9"><circle cx="40" cy="21" r="4"/><circle cx="46.5" cy="22" r="4"/></g>
+          <g fill="#0a0e17"><circle cx="40.7" cy="21.42" r="2.48"/><circle cx="47.2" cy="22.42" r="2.48"/></g>
+          <g fill="#fff"><circle cx="39.82" cy="20.42" r=".88"/><circle cx="46.32" cy="21.42" r=".88"/></g>
+          <path d="M38.5 40.5q2.8 1.8 5.6 0" stroke="#0a0e17" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path class="cst" d="M57 38.4V47" stroke="#5eead4" stroke-width="1.2" stroke-linecap="round"/>
+          <g class="sb" fill="#cbd5e1"><rect x="51.5" y="37.4" width="11" height="2" rx=".5"/></g>
+          <g transform="translate(57 46.4) scale(.42) translate(-32 -27)">
+          <g class="sb" fill="#cbd5e1"><rect x="28.6" y="27" width="6.8" height="3.6" rx=".8"/><path d="M30.5 53.2H33.5L32.4 57.2Q32 58 31.6 57.2Z"/></g>
+          <g class="sa" fill="#5eead4"><path d="M27.5 31.8H36.5L39.8 35.6V39.4L33.6 52H30.4L24.2 39.4V35.6Z"/></g>
+          </g></g>
         </svg>
         <span><span class="brand-truth">Truth</span>Form</span>
       </a>
       <nav aria-label="Primary">
         <ul class="nav">
           <li><a href="#how">How it works</a></li>
+          <li><a href="#another-cloud">Another cloud</a></li>
           <li><a href="#features">Features</a></li>
           <li><a href="#roadmap">Roadmap</a></li>
           <li class="nav-keep"><a href="/docs/">Docs</a></li>
@@ -50,12 +70,12 @@
         <div class="hero-copy">
           <p class="eyebrow">Reverse infrastructure-as-code</p>
           <h1 id="hero-title"><span class="h1-line">Capture what you run,</span> <span class="h1-line accent">deploy what you captured.</span></h1>
-          <p class="lede">TruthForm reads your live systems through each platform's own APIs and writes a normalised snapshot you can review, diff and redeploy. The running system is the source of truth, so there is no state file to manage.</p>
+          <p class="lede">TruthForm reads your live systems through each platform's own APIs and writes a normalised snapshot you can review, diff and redeploy. The running system is the source of truth, so there is no state file to manage. And because a snapshot is the system written down, it can be rewritten: an Azure snapshot translates, offline, into AWS or Google Cloud snapshots that restore the same way.</p>
           <div class="actions">
             <a class="btn btn-primary" href="#follow">Early development: follow along</a>
             <a class="btn btn-ghost" href="/docs/">Read the docs</a>
           </div>
-          <p class="status-line"><span class="badge badge-live">Working today</span> Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare. Not yet released.</p>
+          <p class="status-line"><span class="badge badge-live">Working today</span> Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare, and translation from Azure to AWS or Google Cloud. Not yet released.</p>
         </div>
 
         <figure class="snapshot-card">
@@ -135,7 +155,70 @@
       </div>
     </section>
 
-    <section class="section" id="features" aria-labelledby="features-title">
+    <section class="section" id="another-cloud" aria-labelledby="cloud-title">
+      <div class="wrap">
+        <h2 id="cloud-title" class="section-title">Azure to AWS or Google Cloud, offline</h2>
+        <p class="section-intro"><code>truthform translate</code> reads an Azure snapshot and a short map you write, and writes a snapshot for the other cloud. It makes no request, so nothing is touched while you read the result, and <code>plan</code>, <code>restore</code> and <code>diff</code> take what it writes as they take any snapshot. It does not guess: every Azure object ends in a stated outcome, and the target is never more open than the source.</p>
+
+        <figure class="terminal">
+          <div class="card-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+          <pre tabindex="0" aria-label="Example translation session"><code><span class="c-com"># Rewrite the Azure snapshot for AWS; no login, no request</span>
+<span class="c-prompt">$</span> truthform translate --from snap/azure \
+    --map map.yaml --out moved/
+
+<span class="c-com"># See every write the restore would make, and make none</span>
+<span class="c-prompt">$</span> truthform restore --platform aws --region eu-west-1 \
+    --from moved/aws --dry-run
+
+<span class="c-com"># Then restore it, and diff it, like any snapshot</span>
+<span class="c-prompt">$</span> truthform restore --platform aws --region eu-west-1 \
+    --from moved/aws</code></pre>
+          <figcaption>The map says which destination each service goes to (SQS and SNS, Pub/Sub, or RabbitMQ in the cluster, for example), the region, and what Azure cannot say, such as a node pool's instance type. It has no defaults: a choice it leaves out is refused, naming the key.</figcaption>
+        </figure>
+
+        <ul class="features">
+          <li class="feature">
+            <h3>What it translates</h3>
+            <p>Service Bus, virtual networks and their routing (route tables, NAT, peerings), network and application security groups, flow logs, private endpoints, DNS zones, blob containers, Key Vault secrets, container registries, AKS clusters, the configuration of PostgreSQL and Azure SQL servers, and workload identity. Every other type is reported as not looked at.</p>
+          </li>
+          <li class="feature">
+            <h3>Every object accounted for</h3>
+            <p>Each Azure object is mapped, mapped with losses, refused or not looked at, and <code>translation.yaml</code> says which and why. The run fails when anything is refused, not looked at or less protected than the source, so a partial translation never reads as a finished one.</p>
+          </li>
+          <li class="feature">
+            <h3>Never more open than the source</h3>
+            <p>A translation may let through less than Azure did, never more. Azure's network security groups decide by priority, the first match winning; AWS security groups only allow. Each allow is written with every deny before it taken out, and what cannot be written exactly is narrowed or dropped, and named.</p>
+          </li>
+          <li class="feature">
+            <h3>Evidence for an audit</h3>
+            <p>Every network rule, Azure's defaults included, gets a row for each place it is written: <code>exact</code>, <code>stricter</code>, <code>not carried</code> or <code>does not apply</code>, with the target rules that enforce it. The claim is tested by putting the same packets to Azure's rules and to each target's rules, as that cloud evaluates them.</p>
+          </li>
+          <li class="feature">
+            <h3>Identity, narrowed to the object</h3>
+            <p>A pod that reached a queue, a blob, a secret or an image through its managed identity reaches the translated one, and nothing else: an IAM role for EKS Pod Identity, or a service account on GKE. A grant wider than one object is narrowed to the objects by name. Control-plane roles, custom roles and grants to people are refused.</p>
+          </li>
+          <li class="feature">
+            <h3>Your Git repository too</h3>
+            <p>Workloads applied from Git still name Azure things. With <code>--kube</code> and <code>--gitops</code>, translate lists every image, KEDA trigger and address there that must change, by file and line, with what it becomes on the target. It rewrites no manifest: the repository is yours.</p>
+          </li>
+          <li class="feature">
+            <h3>A dry run against the target</h3>
+            <p><code>restore --dry-run</code> on AWS and Google Cloud reads the target and lists each write. It also finds what would refuse one: a bucket name someone else holds, a role or service account that does not exist, an API not enabled. What it could not check is printed as <code>NOT CHECKED</code>.</p>
+          </li>
+          <li class="feature">
+            <h3>Skills for what is left to people</h3>
+            <p>Data is never copied and machines are not translated. Six skills, built into the binary and served over MCP, let an agent help a person with the rest: moving data, granting refused access, rebuilding machines, a database's TLS floor, flow log parsers, and an estimate of the cost on the target. Each checks its own work and leaves every write to the person.</p>
+          </li>
+        </ul>
+
+        <div class="drill">
+          <h3>Where it stands</h3>
+          <p>Translations are restored into simulated AWS and Google Cloud APIs, and every object is built through the CloudFormation registry or checked against Google's Discovery documents. The dry run has been run read-only against a test AWS account and a test Google Cloud project, with translations of about 1,400 and 1,100 objects: it wrote nothing, caught the two cluster roles the test map made up as missing on AWS, found three APIs not enabled on Google Cloud, and found every bucket name free. <strong>No translation has yet been restored into a real AWS or Google Cloud account.</strong> Azure is the only source so far.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="features" aria-labelledby="features-title">
       <div class="wrap">
         <h2 id="features-title" class="section-title">What works today</h2>
         <p class="section-intro">Early, and not yet released. Everything below is built, and the proof for each platform is listed underneath, including where it is still simulated.</p>
@@ -169,6 +252,22 @@
             <p>Dependency order, in parallel on AWS, Azure and Google Cloud. On the clouds and SaaS it creates only what is missing; <code>--update</code> brings drift back in line and never replaces a resource. Anything not applied is reported.</p>
           </li>
           <li class="feature">
+            <h3>A plan for what a snapshot cannot hold</h3>
+            <p>A cluster rebuilt from a snapshot also needs what is not in it. <code>truthform plan rebuild</code> lists that in the order to act on it: what to install first, the APIs that must be served, the Secrets a person keeps a copy of, the ones a store supplies, and the hosts to point at the new cluster. It reads only the snapshot.</p>
+          </li>
+          <li class="feature">
+            <h3>Secrets read from where they live</h3>
+            <p>A secret sources file says where each Secret's copy is: 1Password, Azure Key Vault, an environment variable, a file, or a command. It holds references, never values, so it can sit in a repository. <code>plan secrets --check --resolve</code> proves every source answers before a rebuild needs it, and a read that gives nothing is refused, so a lapsed sign-in never restores an empty password.</p>
+          </li>
+          <li class="feature">
+            <h3>Restore a part, held</h3>
+            <p>A scope file picks namespaces, Helm releases and labels, and <code>hold</code> restores what it picks with nothing running. A restore is refused, with nothing written, when a GitOps source brought beside a hold would start what is held (unless it is held too, or accepted by name), or when an admission webhook that fails closed would call a Service that will not answer.</p>
+          </li>
+          <li class="feature">
+            <h3>Into another environment</h3>
+            <p>On Kubernetes, <code>--leave-out</code> keeps the new cluster from syncing the source's GitOps path, and <code>--rename</code> points every secret store reference at the new environment's stores. A reference no rename reaches refuses the restore, so a copy never quietly reads production's vault.</p>
+          </li>
+          <li class="feature">
             <h3>Diff for pipelines</h3>
             <p>Missing, extra and changed resources with the fields that changed. Exit codes tell outcomes apart, and <code>--json</code> gives one document a pipeline can read.</p>
           </li>
@@ -182,7 +281,7 @@
           </li>
           <li class="feature">
             <h3>Built for agents too</h3>
-            <p><code>truthform mcp</code> tells an AI agent every field of a resource type, captures and diffs, and says what access to grant and what a grant can read. No tool can change your systems, and there is deliberately no restore tool.</p>
+            <p><code>truthform mcp</code> tells an AI agent every field of a resource type, captures and diffs, says what access to grant and what a grant can read, and serves the translation skills. No tool can change your systems, and there is deliberately no restore tool.</p>
           </li>
         </ul>
 
@@ -208,13 +307,15 @@
       </div>
     </section>
 
-    <section class="section section-alt" id="roadmap" aria-labelledby="roadmap-title">
+    <section class="section" id="roadmap" aria-labelledby="roadmap-title">
       <div class="wrap">
         <h2 id="roadmap-title" class="section-title">Roadmap</h2>
         <p class="section-intro">Planned, not built.</p>
         <ul class="roadmap">
           <li><span class="badge badge-plan">Planned</span><div><h3>More SaaS providers</h3><p>Okta, Datadog and others, on the same OpenAPI-driven engine as GitHub and Cloudflare.</p></div></li>
-          <li><span class="badge badge-plan">Planned</span><div><h3>Secret sources</h3><p>Secret values from a vault at restore time, and AWS Secrets Manager values read live from a source account.</p></div></li>
+          <li><span class="badge badge-plan">Planned</span><div><h3>A translation restored for real</h3><p>A translated Azure environment restored into a real AWS account and a real Google Cloud project, with an empty diff.</p></div></li>
+          <li><span class="badge badge-plan">Planned</span><div><h3>More of Azure translated</h3><p>The types and settings reported as not looked at today, such as a storage account's lifecycle rules and replication, each decided one by one.</p></div></li>
+          <li><span class="badge badge-plan">Planned</span><div><h3>Secrets on AWS</h3><p>Secrets Manager values read live from a source account, as Kubernetes restores already read Secrets from a source cluster.</p></div></li>
           <li><span class="badge badge-plan">Planned</span><div><h3>Drift that opens pull requests</h3><p>Agents watch for drift and open a pull request; deterministic snapshots mean it shows only real change.</p></div></li>
           <li><span class="badge badge-plan">Planned</span><div><h3>Snapshots as MCP resources</h3><p>So an agent can read a snapshot without a tool call.</p></div></li>
           <li><span class="badge badge-plan">Planned</span><div><h3>Scheduled restore drills</h3><p>Restore into a sandbox on a schedule, per platform, and require an empty diff.</p></div></li>
@@ -223,16 +324,12 @@
       </div>
     </section>
 
-    <section class="section" id="follow" aria-labelledby="follow-title">
+    <section class="section section-alt" id="follow" aria-labelledby="follow-title">
       <div class="wrap">
         <div class="follow">
           <h2 id="follow-title">Early development</h2>
           <p>TruthForm is not released yet. It is a private binary you run inside your own environment, with your own credentials. There is no TruthForm service behind it, so your configuration stays with you. The <a href="/docs/">docs</a> describe the current build.</p>
-          <!-- TODO(Dave): replace this paragraph with a real contact (email
-               address or sign-up link). Left as plain text on purpose: a
-               placeholder link would look like a working contact and quietly
-               go nowhere. -->
-          <p class="contact" data-todo="contact">Contact details coming soon.</p>
+          <p class="contact">To try it or ask about it, write to <a href="mailto:admin@sallux.dev">admin@sallux.dev</a>.</p>
         </div>
       </div>
     </section>
@@ -246,7 +343,7 @@
       </p>
       <p class="footer-links"><a href="/docs/">Docs</a></p>
       <p>Not yet released. This site sets no cookies and runs no analytics.</p>
-      <p>&copy; 2026 TruthForm</p>
+      <p>&copy; 2026 Sallux</p>
     </div>
   </footer>
 </body>

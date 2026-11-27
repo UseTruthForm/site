@@ -19,19 +19,18 @@ README, with its deployment notes, would have been published at
 | `index.html` | The home page |
 | `docs/index.html` | Docs overview, linking the pages below |
 | `docs/getting-started/index.html` | Install, credentials, the Cloudflare sign-in, capture, diff, restore (with `--dry-run` and `--subdomain`), environments, exit codes, `--json`, the Azure graph, known limits |
+| `docs/rebuild/index.html` | Kubernetes rebuilds: `plan rebuild`, secret sources, scopes and holds, `--leave-out` and `--rename` into another environment |
+| `docs/another-cloud/index.html` | `translate`: the map, what each service becomes, the audit evidence, workload identity, the GitOps report, the dry run, the skills |
 | `docs/permissions/index.html` | What to grant per platform, each marked verified or expected as in core's `docs/permissions.md` |
 | `docs/agents/index.html` | The MCP server (`truthform mcp`): tools, read-only rules, no restore tool |
 | `styles.css` | All styling, shared by every page; light and dark mode via `prefers-color-scheme` |
-| `logo.svg` | Logo and favicon |
+| `logo.svg` | The mascot (a hermit crab holding the plumb bob, as on the GitHub org avatar), used as the footer mark and favicon; the header carries the same drawing inline |
 | `404.html` | Not-found page; uses root-absolute paths so it renders at any depth |
 | `robots.txt` | Allows all crawlers |
 | `_headers` | Response headers on Cloudflare Pages: a Content-Security-Policy allowing only the site's own stylesheet and images, and `noindex` on `*.pages.dev` |
 
 ## Before going live
 
-- **Contact is a placeholder.** `public/index.html` has `TODO(Dave)` where a
-  real email address or sign-up link belongs. `grep -rn TODO public/` should
-  print nothing before launch.
 - **Every command line on the site must run.** Build `truthform` from core's
   `main` and run `python scripts/check-commands.py <path to truthform>`. It
   checks each `truthform` command and each `--flag` the pages name against the
