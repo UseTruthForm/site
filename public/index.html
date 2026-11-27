@@ -75,7 +75,7 @@
             <a class="btn btn-primary" href="#follow">Early development: follow along</a>
             <a class="btn btn-ghost" href="/docs/">Read the docs</a>
           </div>
-          <p class="status-line"><span class="badge badge-live">Working today</span> Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare, and translation from Azure to AWS or Google Cloud. Not yet released.</p>
+          <p class="status-line"><span class="badge badge-live">Working today</span> Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare, and translation from Azure to AWS or Google Cloud. In beta.</p>
         </div>
 
         <figure class="snapshot-card">
@@ -155,7 +155,48 @@
       </div>
     </section>
 
-    <section class="section" id="another-cloud" aria-labelledby="cloud-title">
+    <section class="section" id="nice" aria-labelledby="nice-title">
+      <div class="wrap">
+        <h2 id="nice-title" class="section-title">Nice to use</h2>
+        <p class="section-intro">Quick to set up, plain about what it did, and safe to try on the systems that matter.</p>
+        <ul class="features">
+          <li class="feature">
+            <h3>One binary, nothing beside it</h3>
+            <p>No server to run, no account to open, no state file to keep and nothing installed in the cluster. Unpack it on Linux, macOS or Windows and point it at what you already run, with the credentials you already have.</p>
+          </li>
+          <li class="feature">
+            <h3>Access, written for you</h3>
+            <p><code>truthform permissions</code> writes the exact grant a capture needs, in the platform's own tool, with the commands to deploy, verify and remove it. <code>truthform check</code> then runs a trial capture as that identity and names any type it still cannot read.</p>
+          </li>
+          <li class="feature">
+            <h3>It tells you what it did not do</h3>
+            <p>Every snapshot opens with <code>REPORT.md</code>, and the first thing in it is what is incomplete. A type it was refused is reported as denied, never as empty, and a run that missed anything ends with exit code 3, so a partial result never passes for a whole one.</p>
+          </li>
+          <li class="feature">
+            <h3>Infrastructure you can review</h3>
+            <p>One readable YAML file per object, written the same way every time, so <code>git diff</code> and a pull request work on a whole estate. <code>truthform diff</code> answers in a line, and exits 2 when something changed.</p>
+          </li>
+          <li class="feature">
+            <h3>Look before it writes</h3>
+            <p><code>--dry-run</code> checks a restore into AWS, Google Cloud, GitHub or Cloudflare against the target first. On Kubernetes, <code>plan rebuild</code> says what a restore needs. A restore that would quietly do the wrong thing is refused before anything is written.</p>
+          </li>
+          <li class="feature">
+            <h3>Try it on a laptop</h3>
+            <p>A local kind cluster is all it takes: capture it, break something, see the diff, restore it and see the diff come back clean. No cloud account, and nothing to pay for.</p>
+          </li>
+          <li class="feature">
+            <h3>No secret written down</h3>
+            <p>A snapshot holds a Secret's key names, never its values, so it can be committed and shared. A Kubernetes restore reads the values live, from the source cluster or from where they are kept, such as 1Password or Key Vault.</p>
+          </li>
+          <li class="feature">
+            <h3>At home in scripts and agents</h3>
+            <p>Add <code>--json</code> to capture, diff, restore, plan or translate for one JSON document on stdout, with the exit code unchanged. <code>truthform mcp</code> gives an AI agent the read-only commands, and no way to restore.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="another-cloud" aria-labelledby="cloud-title">
       <div class="wrap">
         <h2 id="cloud-title" class="section-title">Azure to AWS or Google Cloud, offline</h2>
         <p class="section-intro"><code>truthform translate</code> reads an Azure snapshot and a short map you write, and writes a snapshot for the other cloud. It makes no request, so nothing is touched while you read the result, and <code>plan</code>, <code>restore</code> and <code>diff</code> take what it writes as they take any snapshot. It does not guess: every Azure object ends in a stated outcome, and the target is never more open than the source.</p>
@@ -218,10 +259,10 @@
       </div>
     </section>
 
-    <section class="section section-alt" id="features" aria-labelledby="features-title">
+    <section class="section" id="features" aria-labelledby="features-title">
       <div class="wrap">
         <h2 id="features-title" class="section-title">What works today</h2>
-        <p class="section-intro">Early, and not yet released. Everything below is built, and the proof for each platform is listed underneath, including where it is still simulated.</p>
+        <p class="section-intro">In beta. Everything below is built, and the proof for each platform is listed underneath, including where it is still simulated.</p>
         <ul class="features">
           <li class="feature">
             <h3>Six platforms, read from their own schemas</h3>
@@ -307,7 +348,7 @@
       </div>
     </section>
 
-    <section class="section" id="roadmap" aria-labelledby="roadmap-title">
+    <section class="section section-alt" id="roadmap" aria-labelledby="roadmap-title">
       <div class="wrap">
         <h2 id="roadmap-title" class="section-title">Roadmap</h2>
         <p class="section-intro">Planned, not built.</p>
@@ -324,11 +365,11 @@
       </div>
     </section>
 
-    <section class="section section-alt" id="follow" aria-labelledby="follow-title">
+    <section class="section" id="follow" aria-labelledby="follow-title">
       <div class="wrap">
         <div class="follow">
           <h2 id="follow-title">Early development</h2>
-          <p>TruthForm is not released yet. It is a private binary you run inside your own environment, with your own credentials. There is no TruthForm service behind it, so your configuration stays with you. The <a href="/docs/">docs</a> describe the current build.</p>
+          <p>TruthForm is in beta. It is one binary, under the Apache License 2.0, that you run inside your own environment with your own credentials. There is no TruthForm service behind it, so your configuration stays with you. The <a href="/docs/">docs</a> describe the current build.</p>
           <p class="contact">To try it or ask about it, write to <a href="mailto:admin@sallux.dev">admin@sallux.dev</a>.</p>
         </div>
       </div>
@@ -342,7 +383,7 @@
         <span><span class="brand-truth">Truth</span>Form</span>
       </p>
       <p class="footer-links"><a href="/docs/">Docs</a></p>
-      <p>Not yet released. This site sets no cookies and runs no analytics.</p>
+      <p>In beta, under the Apache License 2.0. This site sets no cookies and runs no analytics.</p>
       <p>&copy; 2026 Sallux</p>
     </div>
   </footer>
