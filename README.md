@@ -89,12 +89,16 @@ every blob, every commit message, every PR's text and comments) on
 
 1. `gh repo edit UseTruthForm/site --visibility public --accept-visibility-change-consequences`
 2. Org Settings > Pages > Add a domain: `usetruthform.com`. GitHub gives a TXT
-   record (`_github-pages-challenge-UseTruthForm`); add it at Namecheap and
-   press Verify. This stops any other GitHub account pointing a Pages site at
+   record (`_github-pages-challenge-usetruthform`); add it in the Cloudflare
+   zone (DNS only) and press Verify. This stops any other GitHub account pointing a Pages site at
    the domain.
-3. DNS at Namecheap (Domain List > usetruthform.com > Advanced DNS). Delete
-   the parking records first (the apex URL redirect / A record and
-   `www CNAME parkingpage.namecheap.com`), then add:
+3. DNS in Cloudflare (all three domains' nameservers moved there on
+   2026-11-27). Adding a zone copies the registrar's records, including its
+   parking records (`@` to a Namecheap redirect server, `www CNAME
+   parkingpage.namecheap.com`), proxied. Proxied to a server with no HTTPS,
+   the apex answered **522** and `www` served the registrar's "for sale"
+   page. Delete those two, keep the MX and SPF records (mail forwarding), and
+   add these, all **DNS only (grey cloud)**:
 
    | Type | Host | Value |
    | --- | --- | --- |
@@ -111,25 +115,35 @@ every blob, every commit message, every PR's text and comments) on
    The `www` target is the org's Pages host, `usetruthform.github.io`. An
    earlier version of this README said `truthform.github.io`, which belongs
    to whoever owns that name and would have pointed `www` at their site.
+
+   DNS only, not proxied: GitHub issues the certificate only when the names
+   resolve to its own addresses, and a proxied record hides them. Proxying
+   with SSL mode "Flexible" would also loop, since Pages redirects HTTP to
+   HTTPS once HTTPS is enforced.
 4. `scripts/configure-repo.sh`: sets Pages to deploy from the workflow, the
    custom domain, HTTPS, and protection on `main` (pull requests only, the
    `check` job must pass, no force pushes or deletion, admins included). It
    reads each setting back. HTTPS cannot be enforced until GitHub has issued
    the certificate, which follows DNS by minutes to an hour; the script says
-   so, and rerunning it later enforces it.
+   so, and rerunning it later enforces it. If the certificate stays
+   `null` with DNS correct, clear the domain and set it again
+   (`gh api -X PUT repos/UseTruthForm/site/pages -F cname=null`, then rerun
+   the script); that started it on 2026-11-27.
 5. Actions > Pages > Run workflow (or push to `main`), and check that the
    "Check the live site" step passes.
 
 GitHub redirects `www` to the apex itself once both resolve.
 
-### truthform.org -> usetruthform.com
+### truthform.org and truthform.dev -> usetruthform.com
 
-truthform.org's DNS is at Namecheap too: Domain List > truthform.org >
-Advanced DNS > add a "URL Redirect Record" for `@` and `www` to
-`https://usetruthform.com/`, Permanent (301). Check that `https://truthform.org`
-(not only `http://`) redirects before relying on it; if Namecheap does not
-answer HTTPS for a redirect, that needs a host with a certificate for
-truthform.org.
+Both zones are in Cloudflare. Each has one Single Redirect rule: host is the
+domain or its `www`, 301 to `concat("https://usetruthform.com",
+http.request.uri.path)`, query string kept. The rule runs only on proxied
+traffic, so `@` and `www` are **proxied** A records to `192.0.2.1`, an
+address reserved for documentation that serves nothing; Cloudflare answers
+every request with the redirect before it would be forwarded. The MX and SPF
+records stay. `.dev` is HTTPS-only in browsers, which Cloudflare's own
+certificate covers.
 
 ### Checking by hand
 
@@ -140,4 +154,5 @@ check the workflow runs. These cover what it does not:
 curl -sI https://www.usetruthform.com/ | grep -i '^location'         # expect https://usetruthform.com/
 curl -sI http://usetruthform.com/ | grep -i '^location'              # expect https://usetruthform.com/ once HTTPS is enforced
 curl -sI https://truthform.org/x | grep -iE '^(HTTP|location)'       # expect 301 to https://usetruthform.com/x
+curl -sI https://truthform.dev/x | grep -iE '^(HTTP|location)'       # expect 301 to https://usetruthform.com/x
 ```
