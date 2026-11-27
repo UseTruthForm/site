@@ -27,7 +27,6 @@ README, with its deployment notes, would have been published at
 | `logo.svg` | The mascot (a hermit crab holding the plumb bob, as on the GitHub org avatar), used as the footer mark and favicon; the header carries the same drawing inline |
 | `404.html` | Not-found page; uses root-absolute paths so it renders at any depth |
 | `robots.txt` | Allows all crawlers |
-| `_headers` | Response headers on Cloudflare Pages: a Content-Security-Policy allowing only the site's own stylesheet and images, and `noindex` on `*.pages.dev` |
 
 ## Before going live
 
@@ -55,56 +54,49 @@ viewport.
 
 ## Deploying
 
-Nothing is deployed yet. GitHub Pages on the free org plan only serves
-**public** repositories, and this one is private, so there are two options.
+Pushing to `main` publishes `public/` to GitHub Pages through
+`.github/workflows/pages.yml`. Pull requests run `scripts/check-pages.py`
+only. After each deploy the workflow runs `scripts/check-live.py`, which
+fetches the live site and fails unless the home page, docs index, stylesheet,
+logo and 404 page are byte for byte this commit's. A deploy that finished
+but is not what visitors get (DNS still at the parking page, a stale CDN
+copy, the site served under `/site/`) fails the run instead of passing it.
 
-### Recommended: (b) Cloudflare Pages, repo stays private
+Nothing is served outside `public/`: the workflow uploads that folder as the
+Pages artifact. Pages' branch deploys can serve only the repo root or `/docs`,
+and either would publish this README.
 
-usetruthform.com is not on Cloudflare nameservers yet (it is on the registrar's
-default DNS); move it first. Then DNS, TLS and hosting end up in one place, nothing needs to become public, and every pushed branch gets its
-own preview URL, so a pull request can be reviewed as a rendered site
-before merging. The cost is one more integration: the Cloudflare Pages GitHub
-app needs read access to this repo.
+### Security headers
 
-1. Cloudflare dashboard > Workers & Pages > Create > Pages > Connect to Git.
-   Install the Cloudflare Pages GitHub app on the UseTruthForm org and grant it
-   **only** `UseTruthForm/site`.
-2. Project settings:
-   - Production branch: `main`
-   - Framework preset: None
-   - Build command: *(leave empty)*
-   - Build output directory: `public`
-3. Deploy, then open the `*.pages.dev` URL and check the page (not just the
-   status code).
-4. Project > Custom domains > add `usetruthform.com`, then `www.usetruthform.com`.
-   Because the zone is on Cloudflare, it creates the proxied DNS records
-   itself (a flattened CNAME at the apex to `<project>.pages.dev`). Remove any
-   older A/AAAA/CNAME records for those names first, or the add fails.
-5. Redirect `www` to the apex: Rules > Redirect Rules > create rule,
-   hostname equals `www.usetruthform.com`, dynamic redirect to
-   `concat("https://usetruthform.com", http.request.uri.path)`, status 301,
-   preserve query string.
+GitHub Pages sends no custom headers, so each page carries its
+Content-Security-Policy and referrer policy in `<meta>` tags, right after the
+charset (a meta policy covers only what follows it). `check-pages.py` fails a
+page that lacks them, has them in the wrong place, or has any `<script>`.
 
-Note: preview deployments are reachable by anyone who has the URL. Put
-Cloudflare Access in front of previews if that matters.
+Not covered by a meta tag, so not sent at all: `frame-ancestors` (browsers
+ignore it in a meta policy), `X-Content-Type-Options` and `Permissions-Policy`.
+The site has no forms, scripts or buttons that act on a click, so being
+framed costs little. Moving hosting behind Cloudflare would bring them back
+if that changes.
 
-### Alternative: (a) GitHub Pages, repo made public
+### First-time setup, once the repo is public
 
-Simplest if publishing the site source is fine. It makes the whole repo
-history public.
+On the free plan GitHub serves Pages and enforces branch protection only for
+public repositories. Before making it public, the history was checked for
+client names and IDs, personal paths, account IDs and secrets (all refs,
+every blob, every commit message, every PR's text and comments) on
+2026-11-27, and was clean. The commit author addresses become public with it.
 
 1. `gh repo edit UseTruthForm/site --visibility public --accept-visibility-change-consequences`
-2. Settings > Pages > Build and deployment > Source: GitHub Actions, with a
-   workflow that uploads `public/` (`actions/upload-pages-artifact` with
-   `path: public`, then `actions/deploy-pages`). Branch deploys serve only
-   the repo root or `/docs`, and either would publish this README. Custom
-   domain: `usetruthform.com`.
-3. Org Settings > Pages > add and verify `usetruthform.com` (a TXT record), so
-   nobody else can point a Pages site at the domain.
-4. DNS in Cloudflare, all **DNS only (grey cloud)** until GitHub has issued the
-   certificate; proxying hides the origin from GitHub's certificate check:
+2. Org Settings > Pages > Add a domain: `usetruthform.com`. GitHub gives a TXT
+   record (`_github-pages-challenge-UseTruthForm`); add it at Namecheap and
+   press Verify. This stops any other GitHub account pointing a Pages site at
+   the domain.
+3. DNS at Namecheap (Domain List > usetruthform.com > Advanced DNS). Delete
+   the parking records first (the apex URL redirect / A record and
+   `www CNAME parkingpage.namecheap.com`), then add:
 
-   | Type | Name | Content |
+   | Type | Host | Value |
    | --- | --- | --- |
    | A | `@` | `185.199.108.153` |
    | A | `@` | `185.199.109.153` |
@@ -114,52 +106,38 @@ history public.
    | AAAA | `@` | `2606:50c0:8001::153` |
    | AAAA | `@` | `2606:50c0:8002::153` |
    | AAAA | `@` | `2606:50c0:8003::153` |
-   | CNAME | `www` | `truthform.github.io` |
+   | CNAME | `www` | `usetruthform.github.io.` |
 
-   Instead of the eight apex records, a single `CNAME @ truthform.github.io`
-   also works, because Cloudflare flattens CNAMEs at the apex.
-5. Once the certificate shows as issued, tick Enforce HTTPS. GitHub redirects
-   `www` to the apex itself.
+   The `www` target is the org's Pages host, `usetruthform.github.io`. An
+   earlier version of this README said `truthform.github.io`, which belongs
+   to whoever owns that name and would have pointed `www` at their site.
+4. `scripts/configure-repo.sh`: sets Pages to deploy from the workflow, the
+   custom domain, HTTPS, and protection on `main` (pull requests only, the
+   `check` job must pass, no force pushes or deletion, admins included). It
+   reads each setting back. HTTPS cannot be enforced until GitHub has issued
+   the certificate, which follows DNS by minutes to an hour; the script says
+   so, and rerunning it later enforces it.
+5. Actions > Pages > Run workflow (or push to `main`), and check that the
+   "Check the live site" step passes.
+
+GitHub redirects `www` to the apex itself once both resolve.
 
 ### truthform.org -> usetruthform.com
 
-truthform.org's DNS is at Namecheap.
+truthform.org's DNS is at Namecheap too: Domain List > truthform.org >
+Advanced DNS > add a "URL Redirect Record" for `@` and `www` to
+`https://usetruthform.com/`, Permanent (301). Check that `https://truthform.org`
+(not only `http://`) redirects before relying on it; if Namecheap does not
+answer HTTPS for a redirect, that needs a host with a certificate for
+truthform.org.
 
-- **Recommended:** add truthform.org as a zone in Cloudflare (free plan) and
-  switch its nameservers at Namecheap to the two Cloudflare gives you. Then
-  add proxied (orange cloud) placeholder records so requests reach
-  Cloudflare: `A @ 192.0.2.1` and `A www 192.0.2.1`. Add a Redirect Rule:
-  hostname is in {`truthform.org`, `www.truthform.org`}, dynamic redirect to
-  `concat("https://usetruthform.com", http.request.uri.path)`, 301, preserve
-  query string. This serves the redirect over HTTPS with Cloudflare's
-  certificate.
-- **Without moving DNS:** Namecheap > Domain List > truthform.org > Advanced
-  DNS > add "URL Redirect Record" for `@` and `www` to
-  `https://usetruthform.com/`, Permanent (301). Check that
-  `https://truthform.org` (not only `http://`) redirects before relying on it.
+### Checking by hand
 
-### After deploying, check it really works
+`python scripts/check-live.py https://usetruthform.com/ public` is the same
+check the workflow runs. These cover what it does not:
 
 ```sh
-curl -s https://usetruthform.com/ | grep -c "Capture what you run"   # expect 1
 curl -sI https://www.usetruthform.com/ | grep -i '^location'         # expect https://usetruthform.com/
-curl -s -o /dev/null -w '%{http_code}\n' https://usetruthform.com/nope # expect 404, not 200
+curl -sI http://usetruthform.com/ | grep -i '^location'              # expect https://usetruthform.com/ once HTTPS is enforced
 curl -sI https://truthform.org/x | grep -iE '^(HTTP|location)'       # expect 301 to https://usetruthform.com/x
-curl -sI https://usetruthform.com/ | grep -ic '^content-security-policy: default-src' # expect 1: _headers applied
-curl -sI https://<project>.pages.dev/ | grep -i '^x-robots-tag'      # expect noindex
-curl -sI https://usetruthform.com/ | grep -ic '^set-cookie'               # expect 0: the footer says no cookies
-curl -s https://usetruthform.com/ | grep -ic '<script'                  # expect 0: the footer says no analytics
 ```
-
-A `200` for `/nope` means the host is falling back to `index.html` for missing
-pages and `404.html` was not picked up.
-
-A missing `content-security-policy` means `_headers` was not picked up (it
-must sit at the build output root). The pages still render without it, so
-nothing else would show the protection is absent.
-
-The footer promises no cookies and no analytics, and Cloudflare can break both
-without any change here: Bot Fight Mode on the zone sets a `__cf_bm` cookie,
-and Pages' Web Analytics setting injects a beacon script into every page (the
-CSP then blocks it, which hides it further). Keep both off; the two checks
-above catch either being turned on.
