@@ -31,9 +31,6 @@ README, with its deployment notes, would have been published at
 
 ## Before going live
 
-- **Contact is a placeholder.** `public/index.html` has `TODO(Dave)` where a
-  real email address or sign-up link belongs. `grep -rn TODO public/` should
-  print nothing before launch.
 - **Every command line on the site must run.** Build `truthform` from core's
   `main` and run `python scripts/check-commands.py <path to truthform>`. It
   checks each `truthform` command and each `--flag` the pages name against the
