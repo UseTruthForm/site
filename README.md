@@ -24,7 +24,7 @@ README, with its deployment notes, would have been published at
 | `docs/permissions/index.html` | What to grant per platform, each marked verified or expected as in core's `docs/permissions.md` |
 | `docs/agents/index.html` | The MCP server (`truthform mcp`): tools, read-only rules, no restore tool |
 | `styles.css` | All styling, shared by every page; light and dark mode via `prefers-color-scheme` |
-| `logo.svg` | Logo and favicon |
+| `logo.svg` | The mascot (a hermit crab holding the plumb bob, as on the GitHub org avatar), used as the footer mark and favicon; the header carries the same drawing inline |
 | `404.html` | Not-found page; uses root-absolute paths so it renders at any depth |
 | `robots.txt` | Allows all crawlers |
 | `_headers` | Response headers on Cloudflare Pages: a Content-Security-Policy allowing only the site's own stylesheet and images, and `noindex` on `*.pages.dev` |

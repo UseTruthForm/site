@@ -16,6 +16,7 @@
   --on-accent: #ffffff;
   --strand-a: #0f766e;
   --strand-b: #334155;
+  --crab-shell: #14b8a6;
   --plan-bg: #eef1f4;
   --plan-text: #3b4652;
   --code-bg: #10171e;
@@ -49,6 +50,7 @@
     --on-accent: #052e2a;
     --strand-a: #5eead4;
     --strand-b: #cbd5e1;
+    --crab-shell: #5eead4;
     --plan-bg: #1c252d;
     --plan-text: #c3ccd4;
     /* In dark mode the code panels sit darker than the page and need a
@@ -163,9 +165,16 @@ code {
    and the footer alike. Only the wordmark: the name in running text stays
    the text colour, or every paragraph would be speckled with green. */
 .brand-truth { color: var(--accent); }
-.brand-mark { width: 30px; height: 30px; flex: none; }
+/* The mark is the mascot, a hermit crab holding the plumb bob. 34px, not
+   the 30 the plain plumb bob had: smaller, its face is lost. The avatar's
+   pale shell is drawn for a dark background, so the shell follows a token
+   that is darker in light mode; without it the crab sits in a near-invisible
+   shell. The whorls stay the same dark teal in both. */
+.brand-mark { width: 34px; height: 34px; flex: none; }
 .brand-mark .sa { fill: var(--strand-a); }
 .brand-mark .sb { fill: var(--strand-b); }
+.brand-mark .cs { fill: var(--crab-shell); }
+.brand-mark .cst { stroke: var(--crab-shell); }
 
 .nav {
   display: flex;
