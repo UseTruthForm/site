@@ -2,6 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <!-- GitHub Pages sends no custom headers, so the policy is here. It must
+       come before anything it governs: a meta policy applies only to what
+       follows it. It allows the site's own stylesheet and images and nothing
+       else, so an injected or accidentally added script is refused rather
+       than quietly loaded. frame-ancestors is left out because browsers
+       ignore it in a meta tag; nothing on the site acts on a click, so
+       framing gains an attacker little. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TruthForm: capture what you run, deploy what you captured</title>
   <meta name="description" content="TruthForm is reverse infrastructure-as-code. It reads your live systems through each platform's own APIs and writes a normalised snapshot you can diff and redeploy, or translate offline from Azure to AWS or Google Cloud. Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare; early development.">

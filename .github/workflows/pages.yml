@@ -1,0 +1,58 @@
+name: Pages
+
+# Every push to main publishes public/ to GitHub Pages. Pull requests run the
+# checks only. Pages' own branch deploys can serve only the repo root or
+# /docs, and either would publish the README; uploading public/ as an
+# artifact serves that folder and nothing else.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time, and never cancel one halfway: a cancelled deploy can
+# leave Pages serving a mix of the old and new site.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: python3 scripts/check-pages.py
+      # check-commands.py is not run here: it needs a truthform binary built
+      # from core, which is private. Run it by hand before merging copy that
+      # names a command or flag (see the README).
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: public
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+      # A finished deploy says nothing about what visitors get: until the
+      # custom domain and its DNS are in place, the address still serves the
+      # registrar's parking page with a 200. Read the live site and fail if it
+      # is not this commit's.
+      - name: Check the live site
+        env:
+          URL: ${{ steps.deploy.outputs.page_url }}
+        run: python3 scripts/check-live.py "$URL" public
