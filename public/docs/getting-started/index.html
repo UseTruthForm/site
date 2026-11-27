@@ -53,7 +53,8 @@
           <li><a href="/#features">Features</a></li>
           <li><a href="/#roadmap">Roadmap</a></li>
           <li class="nav-keep"><a href="/docs/" aria-current="true">Docs</a></li>
-          <li><a class="nav-cta" href="/#follow">Follow along</a></li>
+          <li><a href="https://github.com/UseTruthForm/core">GitHub</a></li>
+          <li><a class="nav-cta" href="/#download">Download</a></li>
         </ul>
       </nav>
     </div>
@@ -81,11 +82,15 @@
 
         <h2 id="install">Install</h2>
         <p>TruthForm is one binary with nothing else to install. It comes as an archive per platform: Linux, macOS and Windows, each for amd64 and arm64, in two editions. That is 12 archives (zip for Windows, tar.gz for the rest) and a <code>SHA256SUMS</code> file to check them against.</p>
-        <p>TruthForm is not publicly released yet, so there is no download page: archives are sent to early users directly.</p>
-        <p>For Linux on amd64, check the archive, unpack it and confirm the build. The file names carry the version, written here as <code>VERSION</code>.</p>
+        <p>Download the archive for your platform and <code>SHA256SUMS</code> from the <a href="https://github.com/UseTruthForm/core/releases/tag/v0.1.0-beta.26">v0.1.0-beta.26 release</a>. Every release so far is a beta, marked as a pre-release, so GitHub shows none of them as "Latest": the <a href="https://github.com/UseTruthForm/core/releases">releases page</a> lists them newest first.</p>
+        <p>For Linux on amd64, check the archive, check that GitHub Actions built it from this repository, unpack it and confirm the build. File names carry the version without its leading <code>v</code>.</p>
 <pre class="codeblock" tabindex="0"><code>sha256sum -c SHA256SUMS --ignore-missing
-tar -xzf truthform_VERSION_linux_amd64.tar.gz
-./truthform_VERSION_linux_amd64/truthform version</code></pre>
+gh attestation verify truthform_0.1.0-beta.26_linux_amd64.tar.gz --repo UseTruthForm/core
+tar -xzf truthform_0.1.0-beta.26_linux_amd64.tar.gz
+./truthform_0.1.0-beta.26_linux_amd64/truthform version</code></pre>
+        <p>The checksum shows the file arrived intact; the attestation shows which workflow run built it, from which commit. The capture-only edition's files end <code>_capture-only</code>, as in <code>truthform_0.1.0-beta.26_linux_amd64_capture-only.tar.gz</code>.</p>
+        <p>To build from source instead, with the Go version <code>go.mod</code> names:</p>
+<pre class="codeblock" tabindex="0"><code>go install github.com/usetruthform/core/cmd/truthform@latest</code></pre>
         <p>Then put <code>truthform</code> (<code>truthform.exe</code> on Windows) on your <code>PATH</code>. <code>truthform version</code> names the version, commit and edition, so any binary can be traced to its build.</p>
 
         <div class="table-wrap">
@@ -243,7 +248,7 @@ truthform diff    --config prod.yaml --from snap/</code></pre>
         </div>
 
         <h2 id="json">Machine-readable output</h2>
-        <p>Add <code>--json</code> to <code>capture</code>, <code>diff</code>, <code>restore</code>, <code>compare</code>, <code>check</code> or <code>permissions</code>, with or without <code>--config</code>. Standard output is then one JSON document, named by its <code>schema</code> field (<code>truthform.org/output/v1</code>), and everything meant for a person goes to standard error. The exit code does not change, and a run that fails still prints a document naming the error.</p>
+        <p>Add <code>--json</code> to <code>capture</code>, <code>diff</code>, <code>restore</code>, <code>compare</code>, <code>check</code>, <code>permissions</code>, <code>plan</code> or <code>translate</code>, with or without <code>--config</code>. Standard output is then one JSON document, named by its <code>schema</code> field (<code>truthform.org/output/v1</code>), and everything meant for a person goes to standard error. The exit code does not change, and a run that fails still prints a document naming the error.</p>
 <pre class="codeblock" tabindex="0"><code>truthform diff --platform aws --region us-east-2 --profile prod --from snap/aws --json | jq '.changes'</code></pre>
         <p>A capture's document says whether it is <code>complete</code> and lists its <code>gaps</code>, and under <code>throttled</code> the gaps a later capture can close as it is; a diff's lists each change with its <code>kind</code> (missing, extra, changed) and <code>fields</code>; a restore's lists each resource with <code>ok</code> and <code>detail</code>.</p>
 
@@ -270,7 +275,7 @@ truthform graph --from snap/azure --subscription "$SUB" --tenant "$TENANT" --out
           <li>On Cloudflare, a <code>--subdomain</code> restore has not yet written to a real zone, and the browser sign-in has not been tried on Windows or macOS.</li>
           <li>On Cloudflare, a record is matched by its type, name and content together, so one whose content changed is, by name, a different record. For an A, AAAA or CNAME record a restore takes it for the same record changed when the zone holds exactly one record of that type at that name which the snapshot does not have: it is reported with the content the zone holds, and <code>--update</code> changes it where it is. With any other mix nothing of that type is written at that name, and the restore says to delete what should go. A TXT, MX or other record is created beside what is there, and the restore names what it is beside. A <code>--subdomain</code> restore still stops on a changed record of its own and asks for it to be deleted first.</li>
           <li>On AWS, restores into another account have not been run against real AWS yet, nor IAM beyond a role and a customer managed policy.</li>
-          <li>On Azure, <code>--rename</code> is proven by the simulated drill, which restores a renamed snapshot and gets an empty diff, and by an offline run over a real snapshot of about 1,600 objects. A real restore into a second subscription has been run; its results are not published here yet.</li>
+          <li>On Azure, <code>--rename</code> is proven by the simulated drill, which restores a renamed snapshot and gets an empty diff, and by an offline run over a real snapshot of about 1,600 objects.</li>
           <li>On Azure, a role assignment for a principal the snapshot does not hold (a person, a group, an application) keeps its object ID, so it fails with <code>PrincipalNotFound</code> in another tenant: TruthForm does not map principals across tenants.</li>
           <li>On Azure, within the source's tenant, role assignment names are taken while the source exists, so pass <code>--new-role-assignment-ids</code> to the restore and to a diff of that target. A custom role's ID is unique per tenant too. A restore will not take over one other subscriptions use: add the target to its <code>assignableScopes</code> and run again, and the role is then taken as it is, never changed.</li>
           <li>On Azure, a VNet peering to a network in another subscription keeps that network's ID, so a restore connects to it if the identity may. Check any before restoring.</li>
@@ -292,7 +297,7 @@ truthform graph --from snap/azure --subscription "$SUB" --tenant "$TENANT" --out
         <img src="/logo.svg" alt="" width="20" height="20">
         <span><span class="brand-truth">Truth</span>Form</span>
       </p>
-      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
+      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a><a href="https://github.com/UseTruthForm/core">GitHub</a></p>
       <p>In beta, under the Apache License 2.0. This site sets no cookies and runs no analytics.</p>
       <p>&copy; 2026 Sallux</p>
     </div>

@@ -53,7 +53,8 @@
           <li><a href="/#features">Features</a></li>
           <li><a href="/#roadmap">Roadmap</a></li>
           <li class="nav-keep"><a href="/docs/" aria-current="true">Docs</a></li>
-          <li><a class="nav-cta" href="/#follow">Follow along</a></li>
+          <li><a href="https://github.com/UseTruthForm/core">GitHub</a></li>
+          <li><a class="nav-cta" href="/#download">Download</a></li>
         </ul>
       </nav>
     </div>
@@ -101,6 +102,8 @@
               <tr><td data-label="Tool"><code>permissions</code></td><td data-label="What it does">What to grant TruthForm on a platform, for capture or for restore: the template to deploy and every command to check, grant, verify and remove it, with your values filled in, and which grants have been verified. It grants nothing. A value it needs and was not given is an error saying how to find it, never a placeholder.</td><td data-label="Main arguments"><code>platform</code>; optional <code>access</code> (<code>capture</code> or <code>restore</code>) and the platform's own values, such as <code>account</code>, <code>subscription</code>, <code>project</code> or <code>context</code></td></tr>
               <tr><td data-label="Tool"><code>check_access</code></td><td data-label="What it does">Who TruthForm runs as, what that identity holds beyond what it needs (root, long-lived keys, write access for a capture), what could not be checked, and what it can read, type by type, from a trial capture written nowhere. A denied type is named as denied, never shown as empty, and a throttled one as throttled, not denied.</td><td data-label="Main arguments"><code>platform</code> and the target, as for capture; optional <code>access</code></td></tr>
               <tr><td data-label="Tool"><code>report</code></td><td data-label="What it does">A snapshot's <code>REPORT.md</code>: what was captured, what was not and why, and what a restore would need.</td><td data-label="Main arguments"><code>from</code></td></tr>
+              <tr><td data-label="Tool"><code>list_skills</code></td><td data-label="What it does">The skills TruthForm carries for the work a translation to another cloud leaves to people: moving data, granting access, rebuilding machines, a TLS floor the target cannot match, reading the target's flow logs, estimating the target's bill. Each name, and when to use it.</td><td data-label="Main arguments">None</td></tr>
+              <tr><td data-label="Tool"><code>skill</code></td><td data-label="What it does">One skill in full: its rules, the work list to read from <code>translation.yaml</code>, the steps, and how the result is checked. An agent reads it before starting that work.</td><td data-label="Main arguments"><code>name</code>, from <code>list_skills</code></td></tr>
             </tbody>
           </table>
         </div>
@@ -135,7 +138,7 @@
         <img src="/logo.svg" alt="" width="20" height="20">
         <span><span class="brand-truth">Truth</span>Form</span>
       </p>
-      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
+      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a><a href="https://github.com/UseTruthForm/core">GitHub</a></p>
       <p>In beta, under the Apache License 2.0. This site sets no cookies and runs no analytics.</p>
       <p>&copy; 2026 Sallux</p>
     </div>

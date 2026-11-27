@@ -67,7 +67,8 @@
           <li><a href="#features">Features</a></li>
           <li><a href="#roadmap">Roadmap</a></li>
           <li class="nav-keep"><a href="/docs/">Docs</a></li>
-          <li><a class="nav-cta" href="#follow">Follow along</a></li>
+          <li><a href="https://github.com/UseTruthForm/core">GitHub</a></li>
+          <li><a class="nav-cta" href="#download">Download</a></li>
         </ul>
       </nav>
     </div>
@@ -81,7 +82,7 @@
           <h1 id="hero-title"><span class="h1-line">Capture what you run,</span> <span class="h1-line accent">deploy what you captured.</span></h1>
           <p class="lede">TruthForm reads your live systems through each platform's own APIs and writes a normalised snapshot you can review, diff and redeploy. The running system is the source of truth, so there is no state file to manage. And because a snapshot is the system written down, it can be rewritten: an Azure snapshot translates, offline, into AWS or Google Cloud snapshots that restore the same way.</p>
           <div class="actions">
-            <a class="btn btn-primary" href="#follow">Early development: follow along</a>
+            <a class="btn btn-primary" href="https://github.com/UseTruthForm/core/releases/tag/v0.1.0-beta.26">Download v0.1.0-beta.26</a>
             <a class="btn btn-ghost" href="/docs/">Read the docs</a>
           </div>
           <p class="status-line"><span class="badge badge-live">Working today</span> Kubernetes, AWS, Azure, Google Cloud, GitHub and Cloudflare, and translation from Azure to AWS or Google Cloud. In beta.</p>
@@ -199,7 +200,7 @@
           </li>
           <li class="feature">
             <h3>At home in scripts and agents</h3>
-            <p>Add <code>--json</code> to capture, diff, restore, plan or translate for one JSON document on stdout, with the exit code unchanged. <code>truthform mcp</code> gives an AI agent the read-only commands, and no way to restore.</p>
+            <p>Add <code>--json</code> to capture, diff, restore, compare, check, permissions, plan or translate for one JSON document on stdout, with the exit code unchanged. <code>truthform mcp</code> gives an AI agent the read-only commands, and no way to restore.</p>
           </li>
         </ul>
       </div>
@@ -374,11 +375,12 @@
       </div>
     </section>
 
-    <section class="section" id="follow" aria-labelledby="follow-title">
+    <section class="section" id="download" aria-labelledby="download-title">
       <div class="wrap">
         <div class="follow">
-          <h2 id="follow-title">Early development</h2>
-          <p>TruthForm is in beta. It is one binary, under the Apache License 2.0, that you run inside your own environment with your own credentials. There is no TruthForm service behind it, so your configuration stays with you. The <a href="/docs/">docs</a> describe the current build.</p>
+          <h2 id="download-title">Download</h2>
+          <p>TruthForm is in beta. It is one binary, under the Apache License 2.0, that you run inside your own environment with your own credentials. There is no TruthForm service behind it, so your configuration stays with you.</p>
+          <p>The current release is <a href="https://github.com/UseTruthForm/core/releases/tag/v0.1.0-beta.26">v0.1.0-beta.26</a>: Linux, macOS and Windows, each for amd64 and arm64, in a full and a capture-only edition, with a <code>SHA256SUMS</code> file and signed build provenance. <a href="/docs/getting-started/#install">Getting started</a> shows how to check a download and how to build from source. The source and every release are on <a href="https://github.com/UseTruthForm/core">GitHub</a>.</p>
           <p class="contact">To try it or ask about it, write to <a href="mailto:admin@sallux.dev">admin@sallux.dev</a>.</p>
         </div>
       </div>
@@ -391,7 +393,7 @@
         <img src="/logo.svg" alt="" width="20" height="20">
         <span><span class="brand-truth">Truth</span>Form</span>
       </p>
-      <p class="footer-links"><a href="/docs/">Docs</a></p>
+      <p class="footer-links"><a href="/docs/">Docs</a><a href="https://github.com/UseTruthForm/core">GitHub</a></p>
       <p>In beta, under the Apache License 2.0. This site sets no cookies and runs no analytics.</p>
       <p>&copy; 2026 Sallux</p>
     </div>
