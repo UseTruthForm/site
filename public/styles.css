@@ -204,13 +204,15 @@ code {
 
 /* The home page is one scroll, so on narrow screens its section links are
    dropped rather than squeezed. The call to action stays, and so does Docs
-   (.nav-keep): it is the only link that leads off the page, and the docs'
-   own navigation is not reachable any other way from the home page. */
+   (.nav-keep): the docs' own navigation is not reachable any other way from
+   the home page. GitHub drops too: there is no room for a third link at
+   360px, and the footer and the download section both link it. */
 @media (max-width: 680px) {
   .nav li:not(:last-child):not(.nav-keep) { display: none; }
 }
 /* At 360px with a scrollbar, the full padding wrapped "Follow along" onto
-   two lines and doubled the header's height on the docs pages. */
+   two lines and doubled the header's height on the docs pages; "Download"
+   is shorter, but the rule keeps any label on one line. */
 .nav a { white-space: nowrap; }
 @media (max-width: 400px) {
   .nav a { padding: 8px 9px; }
@@ -531,7 +533,7 @@ figcaption code { background: rgb(255 255 255 / 10%); color: var(--code-text); }
 .roadmap h3 { font-size: 1.05rem; margin-bottom: 4px; }
 .roadmap p { margin: 0; color: var(--muted); font-size: 0.97rem; }
 
-/* Follow along */
+/* Download */
 
 .follow {
   max-width: 720px;

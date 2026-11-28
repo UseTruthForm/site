@@ -53,7 +53,8 @@
           <li><a href="/#features">Features</a></li>
           <li><a href="/#roadmap">Roadmap</a></li>
           <li class="nav-keep"><a href="/docs/" aria-current="true">Docs</a></li>
-          <li><a class="nav-cta" href="/#follow">Follow along</a></li>
+          <li><a href="https://github.com/UseTruthForm/core">GitHub</a></li>
+          <li><a class="nav-cta" href="/#download">Download</a></li>
         </ul>
       </nav>
     </div>
@@ -150,7 +151,7 @@ truthform diff    --context test --from snap/cluster --scope scope.yaml</code></
 truthform diff    --context test --from snap/cluster --leave-out leave.yaml --rename stores.yaml</code></pre>
         <ul>
           <li><strong><code>--leave-out</code></strong> lists objects the restore does not write and the diff does not expect, as <code>Kind/namespace/name</code> with <code>*</code> for any part. The first to leave out is where GitOps starts: restored as it is, the new cluster would sync the source's path.</li>
-          <li><strong><code>--rename</code></strong> says where Secrets are read from instead: the start of a store reference, and what replaces it. Only fields that name a store or an item in it change, across 1Password, External Secrets, the Vault Secrets Operator, the Secrets Store CSI driver and akv2k8s. <strong>A restore is refused while any store reference is left unnamed or out of reach,</strong> because what reads through it would use the source's store: the copy would quietly read production's secrets.</li>
+          <li><strong><code>--rename</code></strong> says where Secrets are read from instead: the start of a store reference, and what replaces it. Only fields that name a store or an item in it change, across 1Password, External Secrets, the Vault Secrets Operator, the Secrets Store CSI driver and akv2k8s. It also says where images are pulled from instead, such as <code>registry.example.io/shop/: drill.example.io/shop/</code>, and lists every image it changed. An image no start fits is pulled from where the source pulls it, and is never a reason to refuse: most are meant to stay. <strong>A restore is refused while any store reference is left unnamed or out of reach,</strong> because what reads through it would use the source's store: the copy would quietly read production's secrets.</li>
         </ul>
 
         <h2 id="limits">What it cannot see</h2>
@@ -176,7 +177,7 @@ truthform diff    --context test --from snap/cluster --leave-out leave.yaml --re
         <img src="/logo.svg" alt="" width="20" height="20">
         <span><span class="brand-truth">Truth</span>Form</span>
       </p>
-      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a></p>
+      <p class="footer-links"><a href="/">Home</a><a href="/docs/">Docs</a><a href="https://github.com/UseTruthForm/core">GitHub</a></p>
       <p>In beta, under the Apache License 2.0. This site sets no cookies and runs no analytics.</p>
       <p>&copy; 2026 Sallux</p>
     </div>
