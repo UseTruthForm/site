@@ -10,6 +10,12 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  # Core's main changes without any change here: a flag the docs name can
+  # be renamed or removed there, and nothing on this side would notice
+  # until the next site PR. The daily run checks the pages against core's
+  # main as it is that day; it deploys nothing.
+  schedule:
+    - cron: "17 6 * * *"
 
 permissions:
   contents: read
@@ -27,12 +33,31 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: python3 scripts/check-pages.py
-      # check-commands.py is not run here: it needs a truthform binary built
-      # from core, which is private. Run it by hand before merging copy that
-      # names a command or flag (see the README).
+      # Every truthform command and flag on the site, against a binary built
+      # from core's main: the site is meant to be true of main (see the
+      # README). Core is public, so no token is needed to read it.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: UseTruthForm/core
+          ref: main
+          path: core
+          persist-credentials: false
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+      - name: Build truthform from core's main
+        working-directory: core
+        run: |
+          go build -o "$RUNNER_TEMP/truthform" ./cmd/truthform
+          echo "core main at $(git rev-parse --short HEAD)"
+      - run: python3 scripts/check-commands.py "$RUNNER_TEMP/truthform"
 
   deploy:
-    if: github.event_name != 'pull_request'
+    # Not on pull requests, and not on the daily check either: that run is
+    # about core's main moving, and a deploy then would only republish the
+    # same site.
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: check
     runs-on: ubuntu-latest
     permissions:
