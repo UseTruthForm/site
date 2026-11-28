@@ -30,10 +30,12 @@ README, with its deployment notes, would have been published at
 
 ## Before going live
 
-- **Every command line on the site must run.** Build `truthform` from core's
-  `main` and run `python scripts/check-commands.py <path to truthform>`. It
-  checks each `truthform` command and each `--flag` the pages name against the
-  binary's own flags, and fails on any it does not know.
+- **Every command line on the site must run.** CI builds `truthform` from
+  core's `main` and runs `scripts/check-commands.py` against it, on every pull
+  request, every push and once a day. It checks each `truthform` command and
+  each `--flag` the pages name against the binary's own flags, and fails on
+  any it does not know. To run it locally, build core's `main` and run
+  `python scripts/check-commands.py <path to truthform>`.
 - Everything on the site is meant to be true of what is merged on core's
   `main`. When a roadmap item ships, move it to "What works today"; don't
   relabel it early. The docs are adapted from core's `docs/guide.md`,
@@ -56,7 +58,9 @@ viewport.
 
 Pushing to `main` publishes `public/` to GitHub Pages through
 `.github/workflows/pages.yml`. Pull requests run `scripts/check-pages.py`
-only. After each deploy the workflow runs `scripts/check-live.py`, which
+and `scripts/check-commands.py` only. A daily run repeats both against
+core's `main` as it is that day, and deploys nothing: a flag renamed in core
+fails it although nothing here changed. After each deploy the workflow runs `scripts/check-live.py`, which
 fetches the live site and fails unless the home page, docs index, stylesheet,
 logo and 404 page are byte for byte this commit's. A deploy that finished
 but is not what visitors get (DNS still at the parking page, a stale CDN
