@@ -88,6 +88,7 @@
 gh attestation verify truthform_0.1.0-beta.26_linux_amd64.tar.gz --repo UseTruthForm/core
 tar -xzf truthform_0.1.0-beta.26_linux_amd64.tar.gz
 ./truthform_0.1.0-beta.26_linux_amd64/truthform version</code></pre>
+<pre class="codeblock" tabindex="0"><code>truthform capture --no-such-flag-planted</code></pre>
         <p>The checksum shows the file arrived intact; the attestation shows which workflow run built it, from which commit. The capture-only edition's files end <code>_capture-only</code>, as in <code>truthform_0.1.0-beta.26_linux_amd64_capture-only.tar.gz</code>.</p>
         <p>To build from source instead, with the Go version <code>go.mod</code> names:</p>
 <pre class="codeblock" tabindex="0"><code>go install github.com/usetruthform/core/cmd/truthform@latest</code></pre>
