@@ -91,6 +91,7 @@ tar -xzf truthform_0.1.0-beta.26_linux_amd64.tar.gz
         <p>The checksum shows the file arrived intact; the attestation shows which workflow run built it, from which commit. The capture-only edition's files end <code>_capture-only</code>, as in <code>truthform_0.1.0-beta.26_linux_amd64_capture-only.tar.gz</code>.</p>
         <p>To build from source instead, with the Go version <code>go.mod</code> names:</p>
 <pre class="codeblock" tabindex="0"><code>go install github.com/usetruthform/core/cmd/truthform@latest</code></pre>
+        <p>A binary built this way from v0.1.0-beta.26 reports its version as <code>dev (unknown commit)</code>, because only the release build stamps it; <code>go version -m $(which truthform)</code> names the module version it was built from. Releases after beta.26 name their version either way.</p>
         <p>Then put <code>truthform</code> (<code>truthform.exe</code> on Windows) on your <code>PATH</code>. <code>truthform version</code> names the version, commit and edition, so any binary can be traced to its build.</p>
 
         <div class="table-wrap">
